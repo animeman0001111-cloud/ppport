@@ -310,8 +310,22 @@
 </head>
 <body>
 
-<ul class="nav-menu" id="navMenu">
-    <li><a href="index.html" >Home</a></li>
+  <!-- Overlay -->
+  <div class="nav-overlay" id="navOverlay"></div>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-brand">D.E Assignment</div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- Slide-in menu -->
+  <ul class="nav-menu" id="navMenu">
+    <li><a href="index.html">Home</a></li>
     <li><a href="de-index.html">Index</a></li>
     <li><a href="de-intro.html">Introduction</a></li>
     <li><a href="de-first-order.html">First Order</a></li>
@@ -320,14 +334,13 @@
     <li><a href="second-order-de.html">2nd Order D.E.</a></li>
     <li><a href="steady-state.html">Steady State</a></li>
     <li><a href="solution-second-order.html">Solutions</a></li>
-    <li><a href="Functions-of-several-variables.html">Functions</a></li>
-    <li><a href="LAB1.html"class="active">LAB1</a></li>
+    <li><a href="functions-of-several-variables.html">Functions</a></li>
+    <li><a href="LAB1.html" class="active">LAB1</a></li>
     <li><a href="LAB2.html">LAB2</a></li>
     <li><a href="LAB3.html">LAB3</a></li>
     <li><a href="LAB4.html">LAB4</a></li>
     <li><a href="srob.html">Robotics</a></li>
   </ul>
-</nav>
 
 <header class="hero-banner">
   <p class="hero-eyebrow">Lab Experiment No. 01 · 23-04-2026</p>
@@ -521,13 +534,49 @@
 </footer>
 
 <script>
-const reveals = document.querySelectorAll('.reveal');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
+  // Hamburger toggle
+  const toggle  = document.getElementById('navToggle');
+  const menu    = document.getElementById('navMenu');
+  const overlay = document.getElementById('navOverlay');
+
+  function openMenu() {
+    toggle.classList.add('open');
+    menu.classList.add('open');
+    overlay.classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMenu() {
+    toggle.classList.remove('open');
+    menu.classList.remove('open');
+    overlay.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  toggle.addEventListener('click', () => {
+    toggle.classList.contains('open') ? closeMenu() : openMenu();
   });
-}, { threshold: 0.08 });
-reveals.forEach(el => observer.observe(el));
+
+  overlay.addEventListener('click', closeMenu);
+
+  menu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', closeMenu);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.08 });
+  reveals.forEach(el => revealObserver.observe(el));
 </script>
 </body>
 </html>
