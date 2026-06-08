@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 4 — IoT Temperature Gradient · D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --blue-dark: #1c2b3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'JetBrains Mono', monospace; min-height: 100vh; }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 1000; opacity: 0.5;
+  }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    padding: 1.2rem 2.5rem; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--line); background: rgba(245,240,232,0.92); backdrop-filter: blur(12px);
+  }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  .hero-banner {
+    margin-top: 64px; background: var(--blue-dark); padding: 6rem 3rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-banner::before {
+    content: 'IoT · ∇T';
+    position: absolute; right: -1rem; bottom: -1.5rem;
+    font-family: 'Cormorant Garamond', serif; font-size: 9rem; font-weight: 300;
+    color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none;
+  }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 7vw, 5.5rem); font-weight: 300; line-height: 1.05; color: #f0ebe0; max-width: 800px; opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards; }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-meta { display: flex; gap: 3rem; margin-top: 2.5rem; opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards; }
+  .hero-meta-item { display: flex; flex-direction: column; gap: 0.3rem; }
+  .hero-meta-label { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(184,134,11,0.7); }
+  .hero-meta-val { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: rgba(240,235,224,0.8); }
+  .hero-formula { display: inline-block; margin-top: 2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.6); border-left: 3px solid var(--gold); padding-left: 1.2rem; opacity: 0; animation: fadeUp 0.8s 0.55s ease forwards; }
+
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .sub-desc { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  /* Intro */
+  .intro-block { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; align-items: start; margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .intro-aside { position: sticky; top: 90px; }
+  .aside-heading { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; line-height: 1.2; }
+  .aside-heading em { font-style: italic; color: var(--gold); }
+  .aside-line { width: 40px; height: 2px; background: var(--gold); margin: 1.5rem 0; }
+  .aside-note { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-style: italic; color: var(--muted); line-height: 1.7; }
+  .intro-body p { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.85; color: #2a2520; margin-bottom: 1.5rem; }
+  .lead-p { font-size: 1.5rem !important; font-weight: 300; }
+
+  .formula-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; margin: 2.5rem 0; border-left: 4px solid var(--gold); position: relative; overflow: hidden; }
+  .formula-card::before { content: 'T'; position: absolute; right: 1rem; top: -0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 8rem; color: rgba(255,255,255,0.04); pointer-events: none; font-style: italic; }
+  .formula-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .formula-eq { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-style: italic; }
+  .formula-vars { margin-top: 1.2rem; display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  .var-item { display: flex; align-items: baseline; gap: 0.5rem; }
+  .var-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; color: var(--gold); }
+  .var-desc { font-size: 0.68rem; color: rgba(240,235,224,0.6); letter-spacing: 0.05em; }
+
+  /* IoT Questions */
+  .iot-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .iot-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; }
+  .iot-section h2 em { color: var(--gold); font-style: italic; }
+  .iot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+  .iot-card { border: 1px solid var(--line); padding: 2rem; transition: border-color 0.3s, transform 0.3s; position: relative; overflow: hidden; }
+  .iot-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+  .iot-card::before { content: attr(data-num); position: absolute; right: -0.5rem; bottom: -1rem; font-family: 'Cormorant Garamond', serif; font-size: 6rem; color: rgba(184,134,11,0.06); line-height: 1; pointer-events: none; }
+  .iot-tag { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.7rem; }
+  .iot-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--ink); margin-bottom: 0.7rem; }
+  .iot-card p { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--muted); line-height: 1.65; }
+
+  /* Analytical Solution */
+  .solution-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .solution-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; }
+  .solution-section h2 em { color: var(--gold); font-style: italic; }
+  .sol-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+  .dark-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; border-left: 4px solid var(--gold); }
+  .dark-card .d-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; }
+  .dark-card .d-row { margin-bottom: 1.2rem; padding-bottom: 1.2rem; border-bottom: 1px solid rgba(200,191,168,0.15); }
+  .dark-card .d-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .dark-card .d-title { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,235,224,0.4); margin-bottom: 0.5rem; }
+  .dark-card .d-eq { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-style: italic; line-height: 1.5; }
+  .dark-card .d-note { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: rgba(240,235,224,0.55); margin-top: 0.4rem; }
+  .interp-list { list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .interp-list li { display: flex; gap: 1.2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); padding: 1rem 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .interp-list li::before { content: '▸'; color: var(--gold); font-size: 0.7rem; margin-top: 0.3rem; flex-shrink: 0; }
+
+  /* Code section */
+  .code-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .code-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; }
+  .code-section h2 em { color: var(--gold); font-style: italic; }
+  .code-block { background: #0d1117; border: 1px solid rgba(200,191,168,0.2); border-left: 4px solid var(--gold); padding: 2rem; overflow-x: auto; position: relative; margin-top: 2rem; }
+  .code-block.alt { margin-top: 1.5rem; }
+  .code-block::before { content: 'Python · Partial Derivatives'; position: absolute; top: 0.8rem; right: 1rem; font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); opacity: 0.7; }
+  .code-block pre { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; line-height: 1.75; color: #e6edf3; }
+  .kw { color: #ff7b72; } .fn { color: #d2a8ff; } .st { color: #a5d6ff; } .cm { color: #8b949e; font-style: italic; } .nm { color: #79c0ff; } .op { color: #f78166; }
+
+  /* Results */
+  .results-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .results-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; }
+  .results-section h2 em { color: var(--gold); font-style: italic; }
+  .results-trio { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+  .results-trio .full-width { grid-column: 1 / -1; }
+  .graph-block { background: var(--cream); border: 1px solid var(--line); overflow: hidden; }
+  .graph-block img { width: 100%; height: auto; display: block; }
+  .graph-caption { padding: 1rem 1.5rem; border-top: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--muted); }
+
+  .obs-dark { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; border-left: 4px solid var(--gold); }
+  .obs-dark .o-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; }
+  .obs-dark ul { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
+  .obs-dark ul li { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: rgba(240,235,224,0.8); display: flex; gap: 0.8rem; align-items: flex-start; line-height: 1.6; }
+  .obs-dark ul li::before { content: '▸'; color: var(--gold); font-size: 0.65rem; margin-top: 0.35rem; flex-shrink: 0; }
+
+  /* Conclusion */
+  .conclusion-band { background: var(--ink); color: var(--paper); padding: 4rem 3rem; margin: 5rem 0; position: relative; overflow: hidden; }
+  .conclusion-band::before { content: '∇T'; position: absolute; right: -1rem; bottom: -2rem; font-family: 'Cormorant Garamond', serif; font-size: 14rem; font-weight: 300; color: rgba(255,255,255,0.03); pointer-events: none; font-style: italic; }
+  .conclusion-band .c-label { font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .conclusion-band h3 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: #f0ebe0; margin-bottom: 1rem; }
+  .conclusion-band p { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.8; color: rgba(245,240,232,0.75); max-width: 700px; }
+
+  .page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--line); }
+  .nav-arrow { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--ink); transition: gap 0.3s; }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow.right { flex-direction: row-reverse; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .intro-block, .sol-grid, .iot-grid, .results-trio { grid-template-columns: 1fr; gap: 2rem; }
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="lab_assessments.html">Lab Assessments</a></li>
+    <li><a href="lab_1.html">Lab 1</a></li>
+    <li><a href="lab_2.html">Lab 2</a></li>
+    <li><a href="lab_3.html">Lab 3</a></li>
+    <li><a href="lab_4.html" class="active">Lab 4</a></li>
+  </ul>
+</nav>
+
+<header class="hero-banner">
+  <p class="hero-eyebrow">Lab Experiment No. 04 · 21-05-2026</p>
+  <h1 class="hero-title">IoT Temperature<br><em>Gradient Analysis</em></h1>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="hero-meta-label">Student</span><span class="hero-meta-val">Irum Bolar</span></div>
+    <div class="hero-meta-item"><span class="hero-meta-label">Division / Roll</span><span class="hero-meta-val">Y · 2506</span></div>
+    <div class="hero-meta-item"><span class="hero-meta-label">SRN</span><span class="hero-meta-val">01FE25BAR006</span></div>
+  </div>
+  <div class="hero-formula">∇T = (∂T/∂x, ∂T/∂y)</div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Intro -->
+  <div class="intro-block reveal">
+    <div class="intro-aside">
+      <p class="section-tag">Problem Statement</p>
+      <h2 class="aside-heading">Sensor placement via <em>temperature gradients</em></h2>
+      <div class="aside-line"></div>
+      <p class="aside-note">In IoT applications, optimising sensor placement across a surface requires analysing the temperature gradient to identify regions with maximum and minimum changes.</p>
+    </div>
+    <div class="intro-body">
+      <p class="lead-p">Temperature monitoring is critical in IoT for ensuring accurate environmental control. By computing partial derivatives of a temperature field T(x,y), we identify where sensors will be most effective.</p>
+
+      <div class="formula-card">
+        <div class="formula-label">Gradient of the Temperature Scalar Field</div>
+        <div class="formula-eq">∇T = (∂T/∂x, ∂T/∂y)</div>
+        <div class="formula-vars">
+          <div class="var-item"><span class="var-sym">T(x,y)</span><span class="var-desc">= temperature at location</span></div>
+          <div class="var-item"><span class="var-sym">x, y</span><span class="var-desc">= spatial coordinates</span></div>
+          <div class="var-item"><span class="var-sym">∂T/∂x</span><span class="var-desc">= rate of change in x direction</span></div>
+          <div class="var-item"><span class="var-sym">∂T/∂y</span><span class="var-desc">= rate of change in y direction</span></div>
+        </div>
+      </div>
+
+      <p>The temperature field is modelled as a scalar field T(x,y). The gradient vector represents the direction of maximum temperature increase and the rate of temperature change at any given point — directly applicable to IoT temperature monitoring, environmental sensing, and smart systems.</p>
+    </div>
+  </div>
+
+  <!-- IoT Questions -->
+  <div class="iot-section reveal">
+    <div class="section-tag">IoT Application Questions</div>
+    <h2>Key <em>Questions</em> Answered</h2>
+    <p class="sub-desc">Conceptual, practical, and mathematical analysis of temperature gradients</p>
+
+    <div class="iot-grid">
+      <div class="iot-card" data-num="i">
+        <div class="iot-tag">Question i</div>
+        <h3>What do gradient vectors represent in a temperature field?</h3>
+        <p>Gradient vectors point in the direction of maximum temperature increase. They show where temperature rises most rapidly from any given point — like a compass pointing uphill on a temperature landscape.</p>
+      </div>
+      <div class="iot-card" data-num="ii">
+        <div class="iot-tag">Question ii · Bold</div>
+        <h3>Why is gradient analysis important for IoT sensor placement?</h3>
+        <p>Sensors should be placed where gradients are maximum for better sensitivity. Gradient analysis helps detect hotspots, faults, or sudden changes, and optimises sensor count to improve energy efficiency.</p>
+      </div>
+      <div class="iot-card" data-num="iii">
+        <div class="iot-tag">Question iii · Bold</div>
+        <h3>What does the direction and length of a gradient vector tell you?</h3>
+        <p>Direction → where temperature increases fastest. Magnitude (length) → how rapidly temperature changes. Longer arrows on the vector field indicate steeper temperature change in that region.</p>
+      </div>
+      <div class="iot-card" data-num="iv">
+        <div class="iot-tag">Question iv</div>
+        <h3>How does this deepen understanding of math, programming, and IoT?</h3>
+        <p>This task demonstrates how abstract calculus (partial derivatives) maps directly onto physical measurements (sensor data) and practical engineering (optimal sensor placement) — bridging theory and industry.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytical Solution -->
+  <div class="solution-section reveal">
+    <div class="section-tag">Analytical Solution</div>
+    <h2>Solving <em>Analytically</em></h2>
+    <p class="sub-desc">Assumed temperature function T(x,y) = x² + y² — partial derivatives computed analytically</p>
+
+    <div class="sol-grid">
+      <div class="dark-card">
+        <div class="d-label">Analytical Derivation</div>
+        <div class="d-row">
+          <div class="d-title">Assumed Temperature Function</div>
+          <div class="d-eq">T(x, y) = x² + y²</div>
+        </div>
+        <div class="d-row">
+          <div class="d-title">Partial Derivative w.r.t. x</div>
+          <div class="d-eq">∂T/∂x = 2x</div>
+        </div>
+        <div class="d-row">
+          <div class="d-title">Partial Derivative w.r.t. y</div>
+          <div class="d-eq">∂T/∂y = 2y</div>
+        </div>
+        <div class="d-row">
+          <div class="d-title">Gradient Vector</div>
+          <div class="d-eq">∇T = (2x, 2y)</div>
+        </div>
+        <div class="d-row">
+          <div class="d-title">Interpretation</div>
+          <div class="d-eq">Vectors point away from origin</div>
+          <div class="d-note">Temperature increases as we move away from the centre. Magnitude of gradient increases with distance.</div>
+        </div>
+      </div>
+
+      <ul class="interp-list">
+        <li>The mathematical concept used is the gradient of a scalar field — temperature over a 2D surface.</li>
+        <li>Gradient vectors point away from the origin, showing temperature increases radially outward.</li>
+        <li>Temperature increases as we move away from the centre of the surface.</li>
+        <li>The magnitude of the gradient increases with distance — steeper change further from centre.</li>
+        <li>This concept is widely used in IoT temperature monitoring, environmental sensing, and smart systems.</li>
+        <li>The direction of the gradient tells us where to place sensors for maximum sensitivity — at high-gradient regions.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Code -->
+  <div >
+    <img src="LAB4/1 (0).jpeg">
+    <div >
+  <div >
+     <img src="LAB4/1 (1).png">
+    <div >
+  <div >
+     <img src="LAB4/1 (2).png">
+    <div >
+  <div >
+     <img src="LAB4/1 (3).png">
+  <div >
+  <div >
+     <img src="LAB4/1 (4).png">
+  <div >
+  <div >
+    <img src="LAB4/1 (5).jpeg">
+    <div >
+  <div >
+     <img src="LAB4/1 (6).png">
+    <div >
+  <div >
+     <img src="LAB4/1 (7).png">
+    <div >
+  
+
+  <!-- Results - Three Graphs -->
+  <div class="results-section reveal">
+    <div class="section-tag">Results &amp; Graph Analysis</div>
+    <h2>Graph <em>Observations</em></h2>
+    <p class="sub-desc">Three visualisations — 2D contour, 3D surface, and gradient vector field</p>
+
+    <div class="results-trio">
+      <!-- GRADIENT VECTOR FIELD -->
+      <div>
+        <div class="graph-block">
+          <img src="" alt="Temperature Gradient Vector Field">
+          <div class="graph-caption">Fig 1 · Temperature Gradient Vector Field — arrows point toward maximum temperature rise</div>
+        </div>
+      </div>
+      <!-- 2D CONTOUR -->
+      <div>
+        <div class="graph-block">
+          <img src="" alt="2D Temperature Surface Contour Plot">
+          <div class="graph-caption">Fig 2 · 2D Temperature Surface (Contour Plot) — yellow = high, purple = low temperature</div>
+        </div>
+      </div>
+      <!-- 3D SURFACE - FULL WIDTH -->
+      <div class="full-width">
+        <div class="graph-block">
+          <img src="" alt="3D Temperature Surface">
+          <div class="graph-caption">Fig 3 · 3D Temperature Surface T = sin(X)·cos(Y) — wave-like peaks and valleys visible across domain</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:2.5rem;">
+      <div class="obs-dark">
+        <div class="o-label">Graph Observations &amp; IoT Significance</div>
+        <ul>
+          <li>The contour plot shows temperature increasing outward from the centre in a periodic sinusoidal pattern.</li>
+          <li>The gradient vectors point in the direction of maximum temperature rise — longer arrows indicate steeper change.</li>
+          <li>Sensors should be placed where gradients are maximum for better sensitivity — detecting hotspots, faults, or sudden changes.</li>
+          <li>Gradient analysis optimises sensor count and improves energy efficiency in IoT systems.</li>
+          <li>Direction of gradient → where temperature increases fastest. Magnitude → how rapidly temperature changes.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conclusion -->
+  <div class="conclusion-band reveal">
+    <div class="c-label">Conclusion &amp; Learning Outcomes</div>
+    <h3>Mathematics Meets IoT Engineering</h3>
+    <p>This experiment demonstrated that partial derivatives and gradient analysis are directly applicable to real-world IoT temperature sensor placement. By computing numerical gradients and visualising them as vector fields and 3D surfaces, the connection between abstract calculus and practical environmental engineering becomes tangible. The use of Python (NumPy, Matplotlib) made mathematical concepts interactive, visual, and directly applicable to smart sensing systems.</p>
+  </div>
+
+  <div class="page-nav">
+    <a href="lab_3.html" class="nav-arrow">
+      <div class="nav-arrow-icon">←</div>
+      <div><div class="nav-arrow-label">Previous Lab</div><div class="nav-arrow-title">Lab 3 — Gradient Navigation</div></div>
+    </a>
+    <a href="lab_assessments.html" class="nav-arrow right">
+      <div><div class="nav-arrow-label">Back To</div><div class="nav-arrow-title">Lab Assessments Overview</div></div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <p>K.L.E Technological University · 25EMAB102</p>
+  <span class="footer-eq">∇T = (∂T/∂x, ∂T/∂y)</span>
+  <p>Guide: Dr. Narayan Swamy</p>
+</footer>
+
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

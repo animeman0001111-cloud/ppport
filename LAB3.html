@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 3 — Gradient Robot Navigation · D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --blue-dark: #1c2b3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'JetBrains Mono', monospace; min-height: 100vh; }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 1000; opacity: 0.5;
+  }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    padding: 1.2rem 2.5rem; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--line); background: rgba(245,240,232,0.92); backdrop-filter: blur(12px);
+  }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  .hero-banner {
+    margin-top: 64px; background: var(--blue-dark); padding: 6rem 3rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-banner::before {
+    content: '∇f(x,y)';
+    position: absolute; right: -1rem; bottom: -1rem;
+    font-family: 'Cormorant Garamond', serif; font-size: 9rem; font-weight: 300;
+    color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none;
+  }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 7vw, 5.5rem); font-weight: 300; line-height: 1.05; color: #f0ebe0; max-width: 800px; opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards; }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-meta { display: flex; gap: 3rem; margin-top: 2.5rem; opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards; }
+  .hero-meta-item { display: flex; flex-direction: column; gap: 0.3rem; }
+  .hero-meta-label { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(184,134,11,0.7); }
+  .hero-meta-val { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: rgba(240,235,224,0.8); }
+  .hero-formula { display: inline-block; margin-top: 2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.6); border-left: 3px solid var(--gold); padding-left: 1.2rem; opacity: 0; animation: fadeUp 0.8s 0.55s ease forwards; }
+
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .sub-desc { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  /* Intro */
+  .intro-block { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; align-items: start; margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .intro-aside { position: sticky; top: 90px; }
+  .aside-heading { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; line-height: 1.2; }
+  .aside-heading em { font-style: italic; color: var(--gold); }
+  .aside-line { width: 40px; height: 2px; background: var(--gold); margin: 1.5rem 0; }
+  .aside-note { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-style: italic; color: var(--muted); line-height: 1.7; }
+  .intro-body p { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.85; color: #2a2520; margin-bottom: 1.5rem; }
+  .lead-p { font-size: 1.5rem !important; font-weight: 300; }
+
+  .formula-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; margin: 2.5rem 0; border-left: 4px solid var(--gold); position: relative; overflow: hidden; }
+  .formula-card::before { content: '∇'; position: absolute; right: 1rem; top: -0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 8rem; color: rgba(255,255,255,0.04); pointer-events: none; }
+  .formula-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .formula-eq { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-style: italic; }
+  .formula-vars { margin-top: 1.2rem; display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  .var-item { display: flex; align-items: baseline; gap: 0.5rem; }
+  .var-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; color: var(--gold); }
+  .var-desc { font-size: 0.68rem; color: rgba(240,235,224,0.6); letter-spacing: 0.05em; }
+
+  /* Questions section */
+  .questions-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .questions-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; }
+  .questions-section h2 em { color: var(--gold); font-style: italic; }
+  .q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+  .q-card { border: 1px solid var(--line); padding: 2rem; transition: border-color 0.3s, transform 0.3s; position: relative; overflow: hidden; }
+  .q-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+  .q-card::before { content: attr(data-num); position: absolute; right: -0.5rem; bottom: -1rem; font-family: 'Cormorant Garamond', serif; font-size: 6rem; color: rgba(184,134,11,0.06); line-height: 1; pointer-events: none; }
+  .q-tag { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.7rem; }
+  .q-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--ink); margin-bottom: 0.7rem; }
+  .q-card p { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--muted); line-height: 1.65; }
+
+  /* Algorithm section */
+  .algo-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .algo-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; }
+  .algo-section h2 em { color: var(--gold); font-style: italic; }
+  .algo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+  .algo-steps { counter-reset: step; list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .algo-steps li { counter-increment: step; display: flex; gap: 1.2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); padding: 1rem 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .algo-steps li::before { content: counter(step, decimal-leading-zero); font-size: 0.65rem; color: var(--gold); font-family: 'JetBrains Mono', monospace; margin-top: 0.3rem; flex-shrink: 0; width: 2rem; }
+
+  .update-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; border-left: 4px solid var(--gold); }
+  .update-card .u-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; }
+  .update-card .u-row { margin-bottom: 1.2rem; padding-bottom: 1.2rem; border-bottom: 1px solid rgba(200,191,168,0.15); }
+  .update-card .u-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .update-card .u-title { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,235,224,0.4); margin-bottom: 0.5rem; }
+  .update-card .u-eq { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-style: italic; line-height: 1.5; }
+  .update-card .u-note { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: rgba(240,235,224,0.55); margin-top: 0.4rem; }
+
+  /* Code section */
+  .code-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .code-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; }
+  .code-section h2 em { color: var(--gold); font-style: italic; }
+  .code-block { background: #0d1117; border: 1px solid rgba(200,191,168,0.2); border-left: 4px solid var(--gold); padding: 2rem; overflow-x: auto; position: relative; margin-top: 2rem; }
+  .code-block::before { content: 'Python · Gradient Descent'; position: absolute; top: 0.8rem; right: 1rem; font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); opacity: 0.7; }
+  .code-block pre { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; line-height: 1.75; color: #e6edf3; }
+  .kw { color: #ff7b72; } .fn { color: #d2a8ff; } .st { color: #a5d6ff; } .cm { color: #8b949e; font-style: italic; } .nm { color: #79c0ff; } .op { color: #f78166; }
+
+  /* Results */
+  .results-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .results-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; }
+  .results-section h2 em { color: var(--gold); font-style: italic; }
+  .results-split { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+  .graph-block { background: var(--cream); border: 1px solid var(--line); overflow: hidden; }
+  .graph-block img { width: 100%; height: auto; display: block; }
+  .graph-caption { padding: 1rem 1.5rem; border-top: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--muted); }
+  .obs-list { list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .obs-list li { display: flex; gap: 1.2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); padding: 1rem 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .obs-list li::before { content: '▸'; color: var(--gold); font-size: 0.7rem; margin-top: 0.3rem; flex-shrink: 0; }
+
+  /* Limitations */
+  .limits-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .limits-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; }
+  .limits-section h2 em { color: var(--gold); font-style: italic; }
+  .limits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem; }
+  .limit-card { background: var(--cream); padding: 2rem; border-left: 3px solid var(--line); transition: border-color 0.3s; }
+  .limit-card:hover { border-color: var(--gold); }
+  .limit-title { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+  .limit-card h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--ink); margin-bottom: 0.5rem; }
+  .limit-card p { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--muted); line-height: 1.6; }
+
+  /* Conclusion */
+  .conclusion-band { background: var(--ink); color: var(--paper); padding: 4rem 3rem; margin: 5rem 0; position: relative; overflow: hidden; }
+  .conclusion-band::before { content: '∇f'; position: absolute; right: -1rem; bottom: -2rem; font-family: 'Cormorant Garamond', serif; font-size: 14rem; font-weight: 300; color: rgba(255,255,255,0.03); pointer-events: none; font-style: italic; }
+  .conclusion-band .c-label { font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .conclusion-band h3 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: #f0ebe0; margin-bottom: 1rem; }
+  .conclusion-band p { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.8; color: rgba(245,240,232,0.75); max-width: 700px; }
+
+  .page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--line); }
+  .nav-arrow { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--ink); transition: gap 0.3s; }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow.right { flex-direction: row-reverse; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .intro-block, .algo-grid, .results-split, .q-grid, .limits-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="lab_assessments.html">Lab Assessments</a></li>
+    <li><a href="lab_1.html">Lab 1</a></li>
+    <li><a href="lab_2.html">Lab 2</a></li>
+    <li><a href="lab_3.html" class="active">Lab 3</a></li>
+    <li><a href="lab_4.html">Lab 4</a></li>
+  </ul>
+</nav>
+
+<header class="hero-banner">
+  <p class="hero-eyebrow">Lab Experiment No. 03 · 14-05-2026</p>
+  <h1 class="hero-title">Gradient-Based<br><em>Robot Navigation</em></h1>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><span class="hero-meta-label">Student</span><span class="hero-meta-val">Irum Bolar</span></div>
+    <div class="hero-meta-item"><span class="hero-meta-label">Division / Roll</span><span class="hero-meta-val">Y · 2506</span></div>
+    <div class="hero-meta-item"><span class="hero-meta-label">SRN</span><span class="hero-meta-val">01FE25BAR006</span></div>
+  </div>
+  <div class="hero-formula">∇f(x,y) = (∂f/∂x, ∂f/∂y)</div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Intro -->
+  <div class="intro-block reveal">
+    <div class="intro-aside">
+      <p class="section-tag">Problem Statement</p>
+      <h2 class="aside-heading">Simulating robot motion on <em>uneven terrain</em></h2>
+      <div class="aside-line"></div>
+      <p class="aside-note">Given an elevation function f(x,y), the gradient vector ∇f(x,y) is used to simulate a mobile robot moving step by step toward steepest ascent or descent.</p>
+    </div>
+    <div class="intro-body">
+      <p class="lead-p">The gradient vector points in the direction of maximum increase of a scalar field. By following or opposing it iteratively, a robot can navigate complex terrain to reach peaks or valleys.</p>
+
+      <div class="formula-card">
+        <div class="formula-label">Gradient Vector Definition</div>
+        <div class="formula-eq">∇f(x, y) = (∂f/∂x, ∂f/∂y)</div>
+        <div class="formula-vars">
+          <div class="var-item"><span class="var-sym">f(x,y)</span><span class="var-desc">= elevation function</span></div>
+          <div class="var-item"><span class="var-sym">∂f/∂x</span><span class="var-desc">= partial derivative w.r.t. x</span></div>
+          <div class="var-item"><span class="var-sym">∂f/∂y</span><span class="var-desc">= partial derivative w.r.t. y</span></div>
+          <div class="var-item"><span class="var-sym">α</span><span class="var-desc">= step size</span></div>
+        </div>
+      </div>
+
+      <p>This problem is rooted in multivariable calculus and differential equations. The main mathematical concepts are partial derivatives, gradient vectors, steepest ascent/descent, and iterative numerical methods.</p>
+    </div>
+  </div>
+
+  <!-- Reflection Questions -->
+  <div class="questions-section reveal">
+    <div class="section-tag">Reflection Questions</div>
+    <h2>Conceptual <em>Understanding</em></h2>
+    <p class="sub-desc">Answering key questions about gradient navigation</p>
+
+    <div class="q-grid">
+      <div class="q-card" data-num="01">
+        <div class="q-tag">Conceptual Understanding</div>
+        <h3>What does the gradient represent in terrain elevation?</h3>
+        <p>∇f(x,y) represents the direction of steepest increase in elevation at a given point. Its direction shows where terrain rises most rapidly; its magnitude indicates how steep the slope is.</p>
+      </div>
+      <div class="q-card" data-num="02">
+        <div class="q-tag">Directional Insight</div>
+        <h3>How does the gradient determine ascent or descent?</h3>
+        <p>The gradient always points in the direction of maximum ascent (+∇f leads uphill). Moving in the opposite direction (−∇f) gives steepest descent, leading the robot downhill toward a valley.</p>
+      </div>
+      <div class="q-card" data-num="03">
+        <div class="q-tag">Mathematical Application</div>
+        <h3>How are partial derivatives calculated?</h3>
+        <p>∂f/∂x is calculated by differentiating f(x,y) with respect to x while treating y as a constant. Similarly ∂f/∂y differentiates with respect to y while treating x as constant.</p>
+      </div>
+      <div class="q-card" data-num="04">
+        <div class="q-tag">Gradient Magnitude</div>
+        <h3>What does the magnitude of the gradient tell us?</h3>
+        <p>|∇f(x,y)| represents the steepness of the terrain at that point. A larger magnitude means a steeper slope; a smaller magnitude means a gentler slope or nearly flat terrain.</p>
+      </div>
+      <div class="q-card" data-num="05">
+        <div class="q-tag">Step Size Impact</div>
+        <h3>Implications of step size α on robot path?</h3>
+        <p>A large step size makes the robot move faster but may cause overshooting or instability. A small step size gives smoother, more accurate paths but increases computation time.</p>
+      </div>
+      <div class="q-card" data-num="06">
+        <div class="q-tag">Limitations</div>
+        <h3>Challenges not captured by a mathematical function?</h3>
+        <p>Real terrain may have obstacles, discontinuities, loose surfaces, or sudden height changes that aren't smooth or differentiable. Noise can lead to incorrect gradient estimates, causing oscillation or getting stuck in local minima.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Algorithm + Solution -->
+  <div class="algo-section reveal">
+    <div class="section-tag">Algorithm Design &amp; Analytical Solution</div>
+    <h2>Solving <em>Analytically</em></h2>
+    <p class="sub-desc">Elevation function f(x,y) = x² + y² (bowl-shaped terrain)</p>
+
+    <div class="algo-grid">
+      <ol class="algo-steps">
+        <li>Define the terrain elevation function f(x,y) = x² + y²</li>
+        <li>Choose an initial position for the robot: (x₀, y₀) = (3, 3)</li>
+        <li>Compute the gradient ∇f(x,y) = (2x, 2y) analytically</li>
+        <li>Update position iteratively using gradient and step size α</li>
+        <li>For descent: xₙ₊₁ = xₙ − α(∂f/∂x), yₙ₊₁ = yₙ − α(∂f/∂y)</li>
+        <li>Repeat until gradient magnitude becomes very small (local minimum reached)</li>
+      </ol>
+
+      <div class="update-card">
+        <div class="u-label">Position Update Equations</div>
+        <div class="u-row">
+          <div class="u-title">Elevation Function</div>
+          <div class="u-eq">f(x, y) = x² + y²</div>
+          <div class="u-note">Bowl-shaped terrain — minimum at origin</div>
+        </div>
+        <div class="u-row">
+          <div class="u-title">Gradient</div>
+          <div class="u-eq">∇f(x, y) = (2x, 2y)</div>
+        </div>
+        <div class="u-row">
+          <div class="u-title">Ascent Update</div>
+          <div class="u-eq">xₙ₊₁ = xₙ + α(∂f/∂x)</div>
+          <div class="u-eq">yₙ₊₁ = yₙ + α(∂f/∂y)</div>
+        </div>
+        <div class="u-row">
+          <div class="u-title">Descent Update</div>
+          <div class="u-eq">xₙ₊₁ = xₙ − α(∂f/∂x)</div>
+          <div class="u-eq">yₙ₊₁ = yₙ − α(∂f/∂y)</div>
+        </div>
+        <div class="u-row">
+          <div class="u-title">Stopping Condition</div>
+          <div class="u-eq">|∇f| &lt; 0.01 (gradient ≈ zero)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code --><div >
+    <img src="LAB3/3 (0).jpeg">
+    <div >
+  <div >
+     <img src="LAB3/3 (1).png">
+    <div >
+  <div >
+     <img src="LAB3/3 (2).png">
+    <div >
+  <div >
+     <img src="LAB3/3 (3).png">
+  <div >
+  <div >
+     <img src="LAB3/3 (4).png">
+  <div >
+  <div >
+    <img src="LAB3/3 (5).jpeg">
+    <div >
+  <div >
+     <img src="LAB3/3 (6).png">
+    <div >
+  <div >
+     <img src="LAB3/3 (7).png">
+    <div >
+ 
+
+  <!-- Results -->
+  <div class="results-section reveal">
+    <div class="section-tag">Results &amp; Analysis</div>
+    <h2>Graph <em>Observations</em></h2>
+    <p class="sub-desc">Robot path plotted over the contour map of the elevation function</p>
+
+    <div class="results-split">
+      <div>
+        <!-- ROBOT PATH GRAPH -->
+        <div class="graph-block">
+          <img src="" alt="Robot Path Using Gradient Descent">
+          <div class="graph-caption">Fig 1 · Robot Path Using Gradient Descent — red dots trace the path converging to origin</div>
+        </div>
+      </div>
+
+      <ul class="obs-list">
+        <li>The robot follows a smooth path in the direction of steepest ascent or descent. The trajectory aligns with the gradient direction at each point.</li>
+        <li>When moving in the direction of the gradient, the robot climbs uphill and converges to a peak. When moving opposite to the gradient, it descends and settles in a valley.</li>
+        <li>The step size significantly affects the motion. Smaller step sizes result in smoother, more accurate paths; larger step sizes may cause oscillations or overshooting.</li>
+        <li>Gradient-based navigation effectively models robot movement on uneven terrain under ideal mathematical conditions.</li>
+        <li>The stopping condition (|∇f| &lt; 0.01) correctly identifies when the robot has reached a local maximum or minimum.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Limitations -->
+  <div class="limits-section reveal">
+    <div class="section-tag">Limitations &amp; Improvements</div>
+    <h2>Real-World <em>Challenges</em></h2>
+    <p class="sub-desc">What a mathematical model cannot fully capture</p>
+
+    <div class="limits-grid">
+      <div class="limit-card">
+        <div class="limit-title">Terrain Discontinuities</div>
+        <h4>Non-Smooth Real Terrain</h4>
+        <p>Real terrain may have obstacles, discontinuities, and sudden height changes that are not smooth or differentiable. A mathematical function assumes smooth, continuous terrain.</p>
+      </div>
+      <div class="limit-card">
+        <div class="limit-title">Noise Effects</div>
+        <h4>Gradient Estimation Errors</h4>
+        <p>Noise and irregularities can lead to incorrect gradient estimates, causing the robot to oscillate, get stuck in local minima, or follow inefficient paths.</p>
+      </div>
+      <div class="limit-card">
+        <div class="limit-title">Local Minima</div>
+        <h4>Gradient Magnitude Trap</h4>
+        <p>The algorithm stops when the gradient magnitude becomes very small — but this could be a local rather than global minimum, requiring restarts or momentum-based strategies.</p>
+      </div>
+      <div class="limit-card">
+        <div class="limit-title">Improvements</div>
+        <h4>Robustness Techniques</h4>
+        <p>Filtering techniques, adaptive step sizes, and sensor fusion can improve robustness in real-world conditions — addressing the gap between mathematical models and physical reality.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conclusion -->
+  <div class="conclusion-band reveal">
+    <div class="c-label">Conclusion</div>
+    <h3>Gradient Vectors Enable Precise Robot Navigation</h3>
+    <p>The gradient vector provides a powerful mathematical tool for simulating robot navigation on uneven terrain. By using partial derivatives and iterative updates, the robot's motion along steepest ascent or descent can be accurately modelled. This experiment demonstrates the practical application of differential equations and vector calculus in real-world navigation problems, bridging abstract mathematics and physical robotics.</p>
+  </div>
+
+  <div class="page-nav">
+    <a href="lab_2.html" class="nav-arrow">
+      <div class="nav-arrow-icon">←</div>
+      <div><div class="nav-arrow-label">Previous Lab</div><div class="nav-arrow-title">Lab 2 — Robotic Arm</div></div>
+    </a>
+    <a href="lab_4.html" class="nav-arrow right">
+      <div><div class="nav-arrow-label">Next Lab</div><div class="nav-arrow-title">Lab 4 — IoT Temperature</div></div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <p>K.L.E Technological University · 25EMAB102</p>
+  <span class="footer-eq">∇f(x,y) = (∂f/∂x, ∂f/∂y)</span>
+  <p>Guide: Dr. Narayan Swamy</p>
+</footer>
+
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

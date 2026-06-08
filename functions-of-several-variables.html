@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Functions of Several Variables — D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d; --paper: #f5f0e8; --cream: #ede8db;
+    --gold: #b8860b; --rust: #8b3a0f; --muted: #6b6354;
+    --line: #c8bfa8; --dark: #1a1510; --forest: #1e2b1e; --warm-red: #7a1f0f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--paper); color: var(--ink); font-family: 'JetBrains Mono', monospace; min-height: 100vh; }
+
+  .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--gold); z-index: 300; transition: width 0.1s; width: 0%; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; padding: 1.2rem 2.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); background: rgba(245,240,232,0.92); backdrop-filter: blur(12px); }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  .hero-banner { margin-top: 64px; background: var(--forest); padding: 6rem 3rem; position: relative; overflow: hidden; }
+  .hero-banner::before { content: 'z=f(x,y)'; position: absolute; right: 3%; bottom: -1.5rem; font-family: 'Cormorant Garamond', serif; font-size: 11rem; font-weight: 300; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; white-space: nowrap; }
+  .hero-banner::after { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; }
+  .hero-inner { position: relative; z-index: 1; }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 7vw, 6rem); font-weight: 300; line-height: 1.05; color: #f0ebe0; max-width: 700px; opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards; }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-formula { display: inline-block; margin-top: 2.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.6); border-left: 3px solid var(--gold); padding-left: 1.2rem; opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards; }
+
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .block-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .block-section > h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: var(--ink); margin-bottom: 0.4rem; }
+  .sub-desc { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; align-items: start; }
+
+  .def-box { background: var(--forest); color: #f0ebe0; padding: 2.5rem; border-left: 4px solid var(--gold); }
+  .def-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .def-eq { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-style: italic; margin-bottom: 1.5rem; line-height: 1.3; }
+  .var-row { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 0.4rem; }
+  .var-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-style: italic; color: var(--gold); min-width: 3rem; }
+  .var-desc { font-size: 0.65rem; color: rgba(240,235,224,0.6); }
+
+  /* App grid */
+  .app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 2rem; }
+  .app-cell { background: var(--cream); padding: 1.2rem 1.5rem; transition: background 0.3s; }
+  .app-cell:hover { background: var(--paper); }
+  .app-cell .app-icon { font-size: 1.3rem; margin-bottom: 0.4rem; }
+  .app-cell .app-name { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: var(--ink); }
+
+  /* Concept cards - 3 col grid */
+  .concept-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 2rem 0; }
+  .concept-card { background: var(--cream); padding: 2rem 1.5rem; transition: background 0.3s; }
+  .concept-card:hover { background: var(--paper); }
+  .concept-type { display: inline-block; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.25rem 0.7rem; margin-bottom: 1rem; background: var(--forest); color: #f0ebe0; }
+  .concept-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; color: var(--ink); margin-bottom: 0.75rem; }
+  .concept-formula { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--gold); margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: var(--paper); border-left: 2px solid var(--gold); }
+  .concept-traits { list-style: none; display: flex; flex-direction: column; }
+  .concept-traits li { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--muted); padding: 0.5rem 0; border-bottom: 1px solid rgba(200,191,168,0.5); display: flex; gap: 0.75rem; }
+  .concept-traits li:last-child { border-bottom: none; }
+  .concept-traits li::before { content: '·'; color: var(--gold); }
+
+  /* Solved example */
+  .solved-card { border: 1px solid var(--line); overflow: hidden; }
+  .solved-header { background: var(--ink); padding: 1rem 1.8rem; display: flex; justify-content: space-between; align-items: center; }
+  .solved-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; color: #f0ebe0; }
+  .solved-tag { font-size: 0.6rem; letter-spacing: 0.15em; color: var(--gold); }
+  .step-row { display: grid; grid-template-columns: 80px 1fr; gap: 0; border-bottom: 1px solid var(--line); }
+  .step-row:last-child { border-bottom: none; }
+  .step-label { background: var(--cream); padding: 1.2rem 1rem; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); border-right: 1px solid var(--line); display: flex; align-items: center; justify-content: center; text-align: center; }
+  .step-content { padding: 1.2rem 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; line-height: 1.9; color: var(--ink); }
+  .step-content .c { color: var(--gold); }
+  .step-content .v { color: var(--rust); font-weight: 500; }
+  .answer-row { display: flex; align-items: center; gap: 0.75rem; padding: 1.2rem 1.5rem; background: rgba(184,134,11,0.05); border-top: 1px solid var(--line); }
+  .answer-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--forest); color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; padding: 0.5rem 1.2rem; }
+  .answer-badge::before { content: '✓'; color: #8fd9c4; }
+
+  /* Compare table */
+  .compare-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+  .compare-table thead tr { background: var(--ink); }
+  .compare-table th { padding: 1rem 1.5rem; text-align: left; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--paper); font-weight: 400; }
+  .compare-table td { padding: 0.9rem 1.5rem; border-bottom: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--muted); }
+  .compare-table tr:hover td { background: var(--cream); }
+  .compare-table td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink); }
+
+  /* Interactive canvas */
+  .sim-wrap { background: #fff; border: 1px solid var(--line); padding: 1.5rem; }
+  .sim-title { font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; text-align: center; }
+  canvas { display: block; margin: 0 auto; }
+  .sim-controls { display: flex; gap: 2rem; margin-top: 1rem; flex-wrap: wrap; justify-content: center; }
+  .ctrl-group { display: flex; flex-direction: column; gap: 0.3rem; align-items: center; }
+  .ctrl-group label { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .ctrl-group input[type="range"] { width: 110px; accent-color: var(--gold); cursor: pointer; }
+  .ctrl-group .cval { font-family: 'Cormorant Garamond', serif; font-size: 0.9rem; color: var(--gold); }
+
+  .conclusion-block { background: var(--forest); padding: 3rem; border-left: 4px solid var(--gold); }
+  .conclusion-block h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--gold); margin-bottom: 1.5rem; }
+  .conclusion-block p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; line-height: 1.8; color: rgba(240,235,224,0.75); margin-bottom: 0.75rem; }
+
+  .page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--line); }
+  .nav-arrow { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--ink); transition: gap 0.3s; }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+    .two-col { grid-template-columns: 1fr; gap: 2rem; }
+    .concept-grid { grid-template-columns: 1fr; }
+    .app-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html" class="active">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+     <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+    <li><a href="Functions-of-several-variables.html">Functions</a></li>
+    <li><a href="srob.html">Robotics</a></li>
+   </ul>
+</nav>
+
+
+
+<header class="hero-banner">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Chapter 06 · Multivariable Calculus</p>
+    <h1 class="hero-title">Functions of<br><em>Several Variables</em></h1>
+    <div class="hero-formula">z = f(x, y)</div>
+  </div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Introduction -->
+  <div class="block-section reveal">
+    <div class="section-tag">Introduction</div>
+    <h2>Functions of <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Two Variables</em></h2>
+    <p class="sub-desc">Quantities depending on more than one variable — describing surfaces in three-dimensional space</p>
+
+    <div class="two-col">
+      <div>
+        <div class="def-box">
+          <div class="def-label">Definition</div>
+          <div class="def-eq">z = f(x, y)</div>
+          <div class="var-row"><span class="var-sym">x, y</span><span class="var-desc">= independent variables</span></div>
+          <div class="var-row"><span class="var-sym">z</span><span class="var-desc">= dependent variable (output)</span></div>
+          <div class="var-row"><span class="var-sym">f</span><span class="var-desc">= rule assigning unique z to every pair (x,y)</span></div>
+        </div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.8;color:var(--ink);margin-top:1.5rem;">Unlike ordinary functions, these describe <em style="color:var(--gold);">surfaces in 3D space</em> — the foundation of engineering, robotics, machine learning, and optimization.</p>
+        <div class="app-grid">
+          <div class="app-cell"><div class="app-icon">🌡️</div><div class="app-name">Temperature Distribution</div></div>
+          <div class="app-cell"><div class="app-icon">🤖</div><div class="app-name">Robot Position Control</div></div>
+          <div class="app-cell"><div class="app-icon">🧠</div><div class="app-name">Machine Learning</div></div>
+          <div class="app-cell"><div class="app-icon">💧</div><div class="app-name">Fluid Flow Analysis</div></div>
+          <div class="app-cell"><div class="app-icon">🏗️</div><div class="app-name">Structural Design</div></div>
+          <div class="app-cell"><div class="app-icon">✈️</div><div class="app-name">Aerodynamics</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="background:var(--cream);border:1px solid var(--line);padding:2rem;">
+          <div class="section-tag" style="margin-bottom:1.2rem;">Worked Example</div>
+          <div class="def-box" style="margin-bottom:1.5rem;">
+            <div class="def-label">Example: z = x² + y²</div>
+            <div class="def-eq">For x = 1, y = 2</div>
+            <div class="var-row"><span class="var-sym">z</span><span class="var-desc">= 1² + 2² = 5</span></div>
+          </div>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--muted);line-height:1.6;">This graph forms a <em style="color:var(--gold);">paraboloid</em> — a bowl-shaped surface. Minimum value occurs at the origin; surface rises in all directions. Used widely in optimization problems.</p>
+        </div>
+        <!-- Interactive canvas for paraboloid cross-section -->
+        <div class="sim-wrap" style="margin-top:1.5rem;">
+          <div class="sim-title">Interactive: z = x² + y² (cross-section at fixed y)</div>
+          <canvas id="paraboloidCanvas" width="380" height="200"></canvas>
+          <div class="sim-controls">
+            <div class="ctrl-group">
+              <label>Fix y =</label>
+              <input type="range" id="ySlice" min="-3" max="3" value="0" step="0.5">
+              <span class="cval" id="yDisplay">y = 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Limits & Continuity -->
+  <div class="block-section reveal">
+    <div class="section-tag">Limits &amp; Continuity</div>
+    <h2>Approaching a <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Point</em></h2>
+    <p class="sub-desc">A limit describes the value approached by f(x,y) as (x,y) → (a,b) from any direction</p>
+
+    <div class="two-col">
+      <div class="solved-card">
+        <div class="solved-header">
+          <h3>Limit &amp; Continuity Check</h3>
+          <span class="solved-tag">f(x,y) = x² + y²</span>
+        </div>
+        <div>
+          <div class="step-row">
+            <div class="step-label">Limit</div>
+            <div class="step-content"><span class="c">// Find limit at (0,0)</span><br>lim (x,y)→(0,0) (x²+y²)<br>= 0² + 0² = <span class="v">0</span></div>
+          </div>
+          <div class="step-row">
+            <div class="step-label">Check</div>
+            <div class="step-content"><span class="c">// Continuity condition</span><br>lim f(x,y) = f(a,b)<br>0 = f(0,0) = <span class="v">0 ✓</span></div>
+          </div>
+          <div class="step-row">
+            <div class="step-label">Result</div>
+            <div class="step-content"><span class="c">// Conclusion</span><br>Function is <span class="v">continuous</span> at (0,0)</div>
+          </div>
+        </div>
+        <div class="answer-row">
+          <div class="answer-badge">Continuous everywhere on ℝ²</div>
+        </div>
+      </div>
+      <div style="background:var(--cream);border:1px solid var(--line);padding:2rem;">
+        <div class="section-tag" style="margin-bottom:1rem;">Importance of Limits</div>
+        <ul class="concept-traits" style="list-style:none;display:flex;flex-direction:column;">
+          <li style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--muted);padding:0.6rem 0;border-bottom:1px solid rgba(200,191,168,0.5);display:flex;gap:0.75rem;"><span style="color:var(--gold);">·</span>Determining continuity of a surface</li>
+          <li style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--muted);padding:0.6rem 0;border-bottom:1px solid rgba(200,191,168,0.5);display:flex;gap:0.75rem;"><span style="color:var(--gold);">·</span>Establishing stability of systems</li>
+          <li style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--muted);padding:0.6rem 0;border-bottom:1px solid rgba(200,191,168,0.5);display:flex;gap:0.75rem;"><span style="color:var(--gold);">·</span>Smoothness of physical models</li>
+          <li style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--muted);padding:0.6rem 0;display:flex;gap:0.75rem;"><span style="color:var(--gold);">·</span>Physical feasibility verification</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level Curves & Partial Derivatives -->
+  <div class="block-section reveal">
+    <div class="section-tag">Classification</div>
+    <h2>Key <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Concepts</em></h2>
+    <p class="sub-desc">Level curves, partial derivatives, gradient vector — the tools of multivariable calculus</p>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <span class="concept-type">Level Curves</span>
+        <h3>Constant Value Contours</h3>
+        <div class="concept-formula">f(x,y) = C (constant)</div>
+        <ul class="concept-traits">
+          <li>Set z = C to get curve in xy-plane</li>
+          <li>z = x²+y²; C=1 → circle of radius 1</li>
+          <li>Analogous to topographic map contours</li>
+          <li>Used in pressure &amp; temperature analysis</li>
+        </ul>
+      </div>
+      <div class="concept-card">
+        <span class="concept-type">Partial Derivatives</span>
+        <h3>Rate of Change</h3>
+        <div class="concept-formula">∂z/∂x and ∂z/∂y</div>
+        <ul class="concept-traits">
+          <li>Differentiate w.r.t. one variable, hold others fixed</li>
+          <li>For z=x²+y²: ∂z/∂x=2x, ∂z/∂y=2y</li>
+          <li>At (1,2): ∂z/∂x=2, ∂z/∂y=4</li>
+          <li>Faster change in y-direction at (1,2)</li>
+        </ul>
+      </div>
+      <div class="concept-card">
+        <span class="concept-type">Gradient Vector</span>
+        <h3>Direction of Max Increase</h3>
+        <div class="concept-formula">∇f = (∂f/∂x)i + (∂f/∂y)j</div>
+        <ul class="concept-traits">
+          <li>Combines all partial derivatives into a vector</li>
+          <li>At (1,2): ∇f = 2i + 4j</li>
+          <li>Points toward steepest ascent</li>
+          <li>Always perpendicular to level curves</li>
+        </ul>
+      </div>
+    </div>
+
+    <table class="compare-table">
+      <thead>
+        <tr><th>Concept</th><th>Formula</th><th>At Point (1,2) for z=x²+y²</th><th>Application</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Partial ∂z/∂x</td><td>2x</td><td>2</td><td>Rate of change along x-axis</td></tr>
+        <tr><td>Partial ∂z/∂y</td><td>2y</td><td>4</td><td>Rate of change along y-axis</td></tr>
+        <tr><td>Gradient ∇f</td><td>(2x)i + (2y)j</td><td>2i + 4j</td><td>Direction of steepest ascent</td></tr>
+        <tr><td>Directional Dᵤf</td><td>∇f · u</td><td>Depends on u</td><td>Rate in any direction</td></tr>
+        <tr><td>Level Curve</td><td>f(x,y) = C</td><td>x²+y²=5</td><td>Constant-value contour</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Maxima, Minima & Saddle Points -->
+  <div class="block-section reveal">
+    <div class="section-tag">Optimization</div>
+    <h2>Maxima, Minima &amp; <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Saddle Points</em></h2>
+    <p class="sub-desc">Critical points where ∂f/∂x = 0 and ∂f/∂y = 0 simultaneously</p>
+
+    <div class="two-col">
+      <div>
+        <div class="solved-card">
+          <div class="solved-header">
+            <h3>Finding Critical Points</h3>
+            <span class="solved-tag">f(x,y) = x² + y²</span>
+          </div>
+          <div>
+            <div class="step-row">
+              <div class="step-label">Step 1</div>
+              <div class="step-content"><span class="c">// Set partial derivatives to zero</span><br>∂f/∂x = 2x = 0 → x = 0<br>∂f/∂y = 2y = 0 → y = 0</div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Step 2</div>
+              <div class="step-content"><span class="c">// Critical point found</span><br>Critical point: <span class="v">(0, 0)</span></div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Result</div>
+              <div class="step-content"><span class="c">// Evaluate at critical point</span><br>f(0,0) = 0 → <span class="v">Global Minimum</span></div>
+            </div>
+          </div>
+          <div class="answer-row">
+            <div class="answer-badge">Minimum at (0,0) with f = 0</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="solved-card">
+          <div class="solved-header">
+            <h3>Saddle Point Example</h3>
+            <span class="solved-tag">f(x,y) = x² − y²</span>
+          </div>
+          <div>
+            <div class="step-row">
+              <div class="step-label">Step 1</div>
+              <div class="step-content"><span class="c">// Set partial derivatives to zero</span><br>∂f/∂x = 2x = 0 → x = 0<br>∂f/∂y = −2y = 0 → y = 0</div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Step 2</div>
+              <div class="step-content"><span class="c">// Analyse behaviour</span><br>Along x-axis: f increases<br>Along y-axis: f decreases</div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Result</div>
+              <div class="step-content"><span class="c">// Not max, not min</span><br>Point (0,0) is a <span class="v">Saddle Point</span></div>
+            </div>
+          </div>
+          <div class="answer-row">
+            <div class="answer-badge">Saddle Point at origin — neither max nor min</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lagrange Multipliers -->
+  <div class="block-section reveal">
+    <div class="section-tag">Constrained Optimization</div>
+    <h2>Lagrange <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Multipliers</em></h2>
+    <p class="sub-desc">Optimize f(x,y) subject to a constraint g(x,y) = 0 using ∇f = λ∇g</p>
+
+    <div class="two-col">
+      <div class="solved-card">
+        <div class="solved-header">
+          <h3>Lagrange Example</h3>
+          <span class="solved-tag">Maximize f = xy, subject to x+y=10</span>
+        </div>
+        <div>
+          <div class="step-row">
+            <div class="step-label">Setup</div>
+            <div class="step-content"><span class="c">// Define objective &amp; constraint</span><br>f(x,y) = xy<br>g(x,y) = x + y − 10 = 0</div>
+          </div>
+          <div class="step-row">
+            <div class="step-label">Condition</div>
+            <div class="step-content"><span class="c">// Apply ∇f = λ∇g</span><br>∂f/∂x = y = λ · 1<br>∂f/∂y = x = λ · 1<br>Therefore: <span class="v">x = y</span></div>
+          </div>
+          <div class="step-row">
+            <div class="step-label">Solve</div>
+            <div class="step-content"><span class="c">// Use constraint</span><br>x + y = 10 and x = y<br>→ x = 5, y = 5</div>
+          </div>
+        </div>
+        <div class="answer-row">
+          <div class="answer-badge">Maximum f = 5 × 5 = 25 at (5, 5)</div>
+        </div>
+      </div>
+
+      <div style="background:var(--cream);border:1px solid var(--line);padding:2rem;">
+        <div class="section-tag" style="margin-bottom:1rem;">Applications of Lagrange Multipliers</div>
+        <div class="app-grid" style="margin-top:0;">
+          <div class="app-cell"><div class="app-icon">⚙️</div><div class="app-name">Engineering Design Optimization</div></div>
+          <div class="app-cell"><div class="app-icon">🤖</div><div class="app-name">Robotics &amp; Control</div></div>
+          <div class="app-cell"><div class="app-icon">💰</div><div class="app-name">Economics &amp; Finance</div></div>
+          <div class="app-cell"><div class="app-icon">🧠</div><div class="app-name">Machine Learning</div></div>
+          <div class="app-cell"><div class="app-icon">📊</div><div class="app-name">Resource Allocation</div></div>
+          <div class="app-cell"><div class="app-icon">🔬</div><div class="app-name">Physics &amp; Chemistry</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conclusion -->
+  <div class="reveal">
+    <div class="conclusion-block">
+      <h2>Conclusion</h2>
+      <p>Functions of several variables extend single-variable calculus into the multidimensional world — the mathematical reality of engineering systems.</p>
+      <p>Partial derivatives, gradient vectors, level curves, and Lagrange multipliers form a powerful toolkit for analysing and optimizing real-world systems: from robot trajectories to heat distribution, from machine learning loss surfaces to structural design.</p>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <a href="steady-state.html" class="nav-arrow" style="flex-direction:row-reverse;">
+      <div style="text-align:left"><div class="nav-arrow-label">Previous</div><div class="nav-arrow-title">Steady State Response</div></div>
+      <div class="nav-arrow-icon" style="transform:scaleX(-1);">→</div>
+    </a>
+    <a href="solution-second-order.html" class="nav-arrow">
+      <div style="text-align:right"><div class="nav-arrow-label">Next Chapter</div><div class="nav-arrow-title">Solutions: 2nd Order</div></div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+</div>
+
+<footer>
+  <p>K.L.E Technological University · D.E Assignment</p>
+  <span class="footer-eq">z = f(x, y)</span>
+  <p>Functions of Several Variables</p>
+</footer>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const s = document.documentElement.scrollTop;
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    document.getElementById('progressBar').style.width = (s / h * 100) + '%';
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  reveals.forEach(el => new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  }), { threshold: 0.06 }).observe(el));
+
+  // Interactive paraboloid cross-section canvas
+  const canvas = document.getElementById('paraboloidCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  function drawParaboloid() {
+    const yVal = parseFloat(document.getElementById('ySlice').value);
+    document.getElementById('yDisplay').textContent = 'y = ' + yVal;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(200,191,168,0.3)';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i < 8; i++) {
+      const y = i / 7 * H;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    // Zero axis
+    ctx.strokeStyle = 'rgba(107,99,84,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, H-30); ctx.lineTo(W, H-30); ctx.stroke();
+
+    // Draw z = x² + y² for fixed y — parabola in x
+    ctx.strokeStyle = '#b8860b';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    const xRange = 3.5;
+    for (let px = 0; px <= W; px++) {
+      const x = (px / W) * 2 * xRange - xRange;
+      const z = x * x + yVal * yVal;
+      const screenY = (H - 30) - (z / 16) * (H - 50);
+      px === 0 ? ctx.moveTo(px, screenY) : ctx.lineTo(px, screenY);
+    }
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = '#6b6354';
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillText(`z = x² + (${yVal})² at y=${yVal}`, 10, 18);
+  }
+
+  document.getElementById('ySlice').addEventListener('input', drawParaboloid);
+  drawParaboloid();
+</script>
+</body>
+</html>

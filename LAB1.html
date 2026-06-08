@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 1 — Newton's Law of Cooling · D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --rust: #8b3a0f;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --sage: #4a5a4a;
+    --blue-dark: #1c2b3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+ /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.2rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    background: rgba(245,240,232,0.95);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+  }
+
+  /* Hamburger button */
+  .nav-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px;
+    z-index: 101;
+  }
+
+  .nav-toggle span {
+    display: block;
+    width: 100%;
+    height: 1.5px;
+    background: var(--ink);
+    border-radius: 2px;
+    transition: transform 0.35s ease, opacity 0.25s ease, width 0.3s ease;
+    transform-origin: center;
+  }
+
+  /* X state */
+  .nav-toggle.open span:nth-child(1) {
+    transform: translateY(6.5px) rotate(45deg);
+  }
+  .nav-toggle.open span:nth-child(2) {
+    opacity: 0;
+    width: 0;
+  }
+  .nav-toggle.open span:nth-child(3) {
+    transform: translateY(-6.5px) rotate(-45deg);
+  }
+
+  /* Dropdown menu */
+  .nav-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(320px, 90vw);
+    height: 100vh;
+    background: rgba(245,240,232,0.98);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid var(--line);
+    z-index: 99;
+    display: flex;
+    flex-direction: column;
+    padding: 6rem 2rem 3rem;
+    gap: 0;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    list-style: none;
+    overflow-y: auto;
+  }
+
+  .nav-menu.open {
+    transform: translateX(0);
+  }
+
+  .nav-menu li {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav-menu li:first-child {
+    border-top: 1px solid var(--line);
+  }
+
+  .nav-menu a {
+    display: block;
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 1.1rem 0.2rem;
+    transition: color 0.25s, padding-left 0.25s;
+  }
+
+  .nav-menu a:hover,
+  .nav-menu a.active {
+    color: var(--gold);
+    padding-left: 0.6rem;
+  }
+
+  /* Overlay */
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,13,13,0.35);
+    z-index: 98;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+
+  .nav-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+
+  /* Hero */
+  .hero-banner {
+    margin-top: 64px;
+    background: var(--blue-dark);
+    padding: 6rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-banner::before {
+    content: 'dT/dt';
+    position: absolute;
+    right: -1rem;
+    bottom: -1.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 7vw, 5.5rem); font-weight: 300; line-height: 1.05; color: #f0ebe0; max-width: 800px; opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards; }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-meta { display: flex; gap: 3rem; margin-top: 2.5rem; opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards; }
+  .hero-meta-item { display: flex; flex-direction: column; gap: 0.3rem; }
+  .hero-meta-label { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(184,134,11,0.7); }
+  .hero-meta-val { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: rgba(240,235,224,0.8); }
+  .hero-formula { display: inline-block; margin-top: 2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.6); border-left: 3px solid var(--gold); padding-left: 1.2rem; opacity: 0; animation: fadeUp 0.8s 0.55s ease forwards; }
+
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+
+  /* Section tag */
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+
+  /* Intro split */
+  .intro-block { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; align-items: start; margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .intro-aside { position: sticky; top: 90px; }
+  .aside-heading { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; line-height: 1.2; color: var(--ink); }
+  .aside-heading em { font-style: italic; color: var(--gold); }
+  .aside-line { width: 40px; height: 2px; background: var(--gold); margin: 1.5rem 0; }
+  .aside-note { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-style: italic; color: var(--muted); line-height: 1.7; }
+  .intro-body p { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.85; color: #2a2520; margin-bottom: 1.5rem; }
+  .lead-p { font-size: 1.5rem !important; font-weight: 300; }
+
+  /* Formula card */
+  .formula-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; margin: 2.5rem 0; border-left: 4px solid var(--gold); position: relative; overflow: hidden; }
+  .formula-card::before { content: 'e'; position: absolute; right: 1rem; top: -0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 8rem; color: rgba(255,255,255,0.04); pointer-events: none; font-style: italic; }
+  .formula-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .formula-eq { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-style: italic; }
+  .formula-vars { margin-top: 1.2rem; display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  .var-item { display: flex; align-items: baseline; gap: 0.5rem; }
+  .var-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; color: var(--gold); }
+  .var-desc { font-size: 0.68rem; color: rgba(240,235,224,0.6); letter-spacing: 0.05em; }
+
+  /* Steps */
+  .steps-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .steps-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .steps-section h2 em { color: var(--gold); font-style: italic; }
+  .sub-desc { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  .steps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+
+  .analytic-steps { counter-reset: step; list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .analytic-steps li { counter-increment: step; display: flex; align-items: flex-start; gap: 1.2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); padding: 1rem 0; border-bottom: 1px solid var(--line); }
+  .analytic-steps li::before { content: counter(step, decimal-leading-zero); font-size: 0.65rem; color: var(--gold); letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; margin-top: 0.25rem; flex-shrink: 0; width: 2rem; }
+
+  /* Dark solution card */
+  .solution-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; border-left: 4px solid var(--gold); }
+  .solution-card .s-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; }
+  .solution-card .s-row { margin-bottom: 1.2rem; padding-bottom: 1.2rem; border-bottom: 1px solid rgba(200,191,168,0.15); }
+  .solution-card .s-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .solution-card .s-title { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,235,224,0.4); margin-bottom: 0.5rem; }
+  .solution-card .s-eq { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-style: italic; line-height: 1.5; }
+  .solution-card .s-note { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: rgba(240,235,224,0.6); margin-top: 0.4rem; font-style: italic; }
+
+  /* Code section */
+  .code-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .code-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .code-section h2 em { color: var(--gold); font-style: italic; }
+  .code-split { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+  .code-block { background: #0d1117; border: 1px solid rgba(200,191,168,0.2); border-left: 4px solid var(--gold); padding: 2rem; overflow-x: auto; position: relative; }
+  .code-block::before { content: 'Python'; position: absolute; top: 0.8rem; right: 1rem; font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); opacity: 0.7; }
+  .code-block pre { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; line-height: 1.75; color: #e6edf3; }
+  .kw { color: #ff7b72; }
+  .fn { color: #d2a8ff; }
+  .st { color: #a5d6ff; }
+  .cm { color: #8b949e; font-style: italic; }
+  .nm { color: #79c0ff; }
+  .op { color: #f78166; }
+
+  .code-notes { display: flex; flex-direction: column; gap: 1.2rem; }
+  .code-note { border: 1px solid var(--line); padding: 1.5rem; transition: border-color 0.3s, transform 0.3s; }
+  .code-note:hover { border-color: var(--gold); transform: translateX(4px); }
+  .code-note-tag { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .code-note h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--ink); margin-bottom: 0.4rem; }
+  .code-note p { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--muted); line-height: 1.6; }
+
+  /* Results section */
+  .results-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .results-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .results-section h2 em { color: var(--gold); font-style: italic; }
+  .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+
+  .graph-block { background: var(--cream); border: 1px solid var(--line); overflow: hidden; }
+  .graph-block img { width: 100%; height: auto; display: block; }
+  .graph-caption { padding: 1rem 1.5rem; border-top: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--muted); }
+  .graph-placeholder { width: 100%; height: 280px; background: linear-gradient(135deg, #1c2b3a 0%, #0d1117 100%); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; }
+  .graph-placeholder span { font-family: 'Cormorant Garamond', serif; font-size: 0.9rem; color: rgba(240,235,224,0.3); letter-spacing: 0.1em; }
+
+  .observations { display: flex; flex-direction: column; gap: 1rem; }
+  .obs-item { display: flex; gap: 1rem; padding: 1.2rem; border: 1px solid var(--line); transition: border-color 0.3s; }
+  .obs-item:hover { border-color: var(--gold); }
+  .obs-num { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: rgba(184,134,11,0.25); line-height: 1; flex-shrink: 0; }
+  .obs-text { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); line-height: 1.6; }
+
+  /* Conclusion */
+  .conclusion-band { background: var(--ink); color: var(--paper); padding: 4rem 3rem; margin: 5rem 0; position: relative; overflow: hidden; }
+  .conclusion-band::before { content: '≈20°C'; position: absolute; right: -1rem; bottom: -1.5rem; font-family: 'Cormorant Garamond', serif; font-size: 9rem; font-weight: 300; color: rgba(255,255,255,0.03); pointer-events: none; }
+  .conclusion-band .c-label { font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .conclusion-band h3 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: #f0ebe0; margin-bottom: 1rem; }
+  .conclusion-band p { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.8; color: rgba(245,240,232,0.75); max-width: 700px; }
+
+  /* Page nav */
+  .page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--line); }
+  .nav-arrow { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--ink); transition: gap 0.3s; }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow.right { flex-direction: row-reverse; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .intro-block, .steps-grid, .code-split, .results-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+    .hero-meta { flex-wrap: wrap; gap: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<ul class="nav-menu" id="navMenu">
+    <li><a href="index.html" >Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+    <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+    <li><a href="Functions-of-several-variables.html">Functions</a></li>
+    <li><a href="LAB1.html"class="active">LAB1</a></li>
+    <li><a href="LAB2.html">LAB2</a></li>
+    <li><a href="LAB3.html">LAB3</a></li>
+    <li><a href="LAB4.html">LAB4</a></li>
+    <li><a href="srob.html">Robotics</a></li>
+  </ul>
+</nav>
+
+<header class="hero-banner">
+  <p class="hero-eyebrow">Lab Experiment No. 01 · 23-04-2026</p>
+  <h1 class="hero-title">Newton's Law of<br><em>Cooling &amp; Warming</em></h1>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Student</span>
+      <span class="hero-meta-val">Irum Bolar</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Division / Roll</span>
+      <span class="hero-meta-val">Y · 2506</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">SRN</span>
+      <span class="hero-meta-val">01FE25BAR006</span>
+    </div>
+  </div>
+  <div class="hero-formula">dT/dt = −k(T − Tₛ)</div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Question + Overview -->
+  <div class="intro-block reveal">
+    <div class="intro-aside">
+      <p class="section-tag">Problem Statement</p>
+      <h2 class="aside-heading">Coffee cools,<br>ice cream <em>warms</em></h2>
+      <div class="aside-line"></div>
+      <p class="aside-note">A cup of coffee at 95°C placed in a room at 20°C — model the temperature change over time using a first-order differential equation.</p>
+    </div>
+    <div class="intro-body">
+      <p class="lead-p">Temperature change in objects follows an exponential pattern governed by Newton's Law of Cooling. The rate of change is proportional to the difference between the object's temperature and its surroundings.</p>
+
+      <div class="formula-card">
+        <div class="formula-label">Newton's Law of Cooling</div>
+        <div class="formula-eq">dT/dt = −k(T − Tₛ)</div>
+        <div class="formula-vars">
+          <div class="var-item"><span class="var-sym">T</span><span class="var-desc">= object temperature</span></div>
+          <div class="var-item"><span class="var-sym">Tₛ</span><span class="var-desc">= surrounding temperature</span></div>
+          <div class="var-item"><span class="var-sym">k</span><span class="var-desc">= cooling/warming constant</span></div>
+          <div class="var-item"><span class="var-sym">t</span><span class="var-desc">= time</span></div>
+        </div>
+      </div>
+
+      <p>This is a first-order linear differential equation. Both cooling (coffee from 95°C to 75°C) and warming (ice cream from −15°C to 20°C) are governed by the same equation, confirming its universality.</p>
+    </div>
+  </div>
+
+  <!-- Analytical Solution -->
+  <div class="steps-section reveal">
+    <div class="section-tag">Analytical Solution</div>
+    <h2>Solving the <em>Equation</em></h2>
+    <p class="sub-desc">Deriving T(t) from the governing differential equation</p>
+
+    <div class="steps-grid">
+      <div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;line-height:1.8;color:#2a2520;margin-bottom:2rem;">The solution to Newton's Law of Cooling is found by separating variables and integrating. The result is a decaying exponential that approaches the ambient temperature asymptotically.</p>
+
+        <ol class="analytic-steps">
+          <li>The rate of temperature change depends on the difference between object and surrounding temperature</li>
+          <li>Initially the rate of change is high, then decreases as temperatures equalize</li>
+          <li>The object never crosses the surrounding temperature</li>
+          <li>Apply initial condition T(0) = T₀ to find the constant of integration</li>
+          <li>Compare coffee cooling and ice cream warming using the same k value</li>
+        </ol>
+      </div>
+
+      <div class="solution-card">
+        <div class="s-label">Solution Steps</div>
+
+        <div class="s-row">
+          <div class="s-title">Governing Equation</div>
+          <div class="s-eq">dT/dt = −k(T − Tₛ)</div>
+        </div>
+        <div class="s-row">
+          <div class="s-title">Separate Variables &amp; Integrate</div>
+          <div class="s-eq">∫ dT/(T − Tₛ) = −k∫dt</div>
+          <div class="s-note">ln|T − Tₛ| = −kt + C</div>
+        </div>
+        <div class="s-row">
+          <div class="s-title">General Solution</div>
+          <div class="s-eq">T(t) = Tₛ + (T₀ − Tₛ)e^(−kt)</div>
+        </div>
+        <div class="s-row">
+          <div class="s-title">Coffee Cooling · Parameters</div>
+          <div class="s-eq">T₀ = 95°C, Tₛ = 20°C, k = 0.0715</div>
+        </div>
+        <div class="s-row">
+          <div class="s-title">Ice Cream Warming</div>
+          <div class="s-eq">T₀ = −15°C, Tₛ = 20°C, k = 0.0715</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Python Code -->
+  <div >
+    <img src="LAB1/2 (0).jpeg">
+    <div >
+  <div >
+     <img src="LAB1/2 (1).png">
+    <div >
+  <div >
+     <img src="LAB1/2 (2).png">
+    <div >
+  <div >
+     <img src="LAB1/2 (3).png">
+  <div >
+  <div >
+     <img src="LAB1/2 (4).png">
+  <div >
+
+  <!-- Results & Graphs -->
+  <div class="results-section reveal">
+    <div class="section-tag">Results &amp; Analysis</div>
+    <h2>Graph <em>Observations</em></h2>
+    <p class="sub-desc">Interpreting the temperature vs. time plots</p>
+
+    <div class="results-grid">
+      <div>
+        <!-- COFFEE COOLING GRAPH -->
+        <div class="graph-block">
+          <img src="" alt="Coffee Cooling Graph — Temperature vs Time">
+          <div class="graph-caption">Fig 1 · Coffee Cooling (95°C → room temp) — RK4 Method</div>
+        </div>
+        <br>
+        <!-- ICE CREAM WARMING GRAPH -->
+        <div class="graph-block">
+          <img src="" alt="Ice Cream Warming Graph — Temperature vs Time">
+          <div class="graph-caption">Fig 2 · Ice Cream Warming (−15°C → 20°C)</div>
+        </div>
+      </div>
+
+      <div class="observations">
+        <div class="obs-item">
+          <div class="obs-num">01</div>
+          <div class="obs-text">Coffee cools fastest at the beginning and slows down as it approaches room temperature — exponential decay.</div>
+        </div>
+        <div class="obs-item">
+          <div class="obs-num">02</div>
+          <div class="obs-text">Ice cream warms slowly at first, then gradually approaches room temperature — exponential growth.</div>
+        </div>
+        <div class="obs-item">
+          <div class="obs-num">03</div>
+          <div class="obs-text">Both curves approach the same equilibrium temperature of 20°C — neither ever crosses it.</div>
+        </div>
+        <div class="obs-item">
+          <div class="obs-num">04</div>
+          <div class="obs-text">Time to reach 75°C: 5 s · Time to reach 60°C: 9 s — extracted directly from the numerical solution.</div>
+        </div>
+        <div class="obs-item">
+          <div class="obs-num">05</div>
+          <div class="obs-text">This confirms that the same first-order differential equation governs both cooling and warming processes.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conclusion -->
+  <div class="conclusion-band reveal">
+    <div class="c-label">Conclusion</div>
+    <h3>One Equation, Two Phenomena</h3>
+    <p>Newton's Law of Cooling elegantly models both heat loss and heat gain using a single first-order ODE. The RK4 numerical method provided highly accurate results, confirming that the rate of temperature change is always proportional to the temperature difference — rapidly at first, slowing asymptotically to equilibrium. This experiment establishes the foundation of applied differential equations in thermodynamic systems.</p>
+  </div>
+
+  <!-- Page nav -->
+  <div class="page-nav">
+    <a href="lab_assessments.html" class="nav-arrow">
+      <div class="nav-arrow-icon">←</div>
+      <div>
+        <div class="nav-arrow-label">Back To</div>
+        <div class="nav-arrow-title">Lab Assessments</div>
+      </div>
+    </a>
+    <a href="lab_2.html" class="nav-arrow right">
+      <div>
+        <div class="nav-arrow-label">Next Lab</div>
+        <div class="nav-arrow-title">Lab 2 — Robotic Arm</div>
+      </div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <p>K.L.E Technological University · 25EMAB102</p>
+  <span class="footer-eq">T(t) = Tₛ + (T₀ − Tₛ)e^(−kt)</span>
+  <p>Guide: Dr. Narayan Swamy</p>
+</footer>
+
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

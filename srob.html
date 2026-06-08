@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Differential Equations in Robotics — D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --rust: #8b3a0f;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --sage: #4a5a4a;
+    --blue-dark: #1c2b3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'JetBrains Mono', monospace; min-height: 100vh; }
+  body::after { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 1000; opacity: 0.5; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; padding: 1.2rem 2.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); background: rgba(245,240,232,0.92); backdrop-filter: blur(12px); }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  .hero-banner { margin-top: 64px; background: var(--blue-dark); padding: 6rem 3rem; position: relative; overflow: hidden; }
+  .hero-banner::before { content: 'θ̈+cθ̇+kθ=0'; position: absolute; right: -2rem; bottom: -1rem; font-family: 'Cormorant Garamond', serif; font-size: 9rem; font-weight: 300; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; white-space: nowrap; }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 7vw, 6rem); font-weight: 300; line-height: 1.05; color: #f0ebe0; max-width: 700px; opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards; }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-formula { display: inline-block; margin-top: 2.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.6); border-left: 3px solid var(--gold); padding-left: 1.2rem; opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards; }
+
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+
+  .intro-block { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; align-items: start; margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .intro-aside { position: sticky; top: 90px; }
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .aside-heading { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; line-height: 1.2; color: var(--ink); }
+  .aside-heading em { font-style: italic; color: var(--gold); }
+  .aside-line { width: 40px; height: 2px; background: var(--gold); margin: 1.5rem 0; }
+  .aside-note { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-style: italic; color: var(--muted); line-height: 1.7; }
+  .intro-body p { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.85; color: #2a2520; margin-bottom: 1.5rem; }
+  .lead-p { font-size: 1.5rem !important; font-weight: 300; }
+
+  .formula-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; margin: 2.5rem 0; border-left: 4px solid var(--gold); position: relative; overflow: hidden; }
+  .formula-card::before { content: '∫'; position: absolute; right: 1rem; top: -0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 8rem; color: rgba(255,255,255,0.04); pointer-events: none; }
+  .formula-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .formula-eq { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-style: italic; }
+  .formula-vars { margin-top: 1.2rem; display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  .var-item { display: flex; align-items: baseline; gap: 0.5rem; }
+  .var-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; color: var(--gold); }
+  .var-desc { font-size: 0.68rem; color: rgba(240,235,224,0.6); letter-spacing: 0.05em; }
+
+  /* Robotics application sections */
+  .app-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .app-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .app-section h2 em { color: var(--gold); font-style: italic; }
+  .sub-desc { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  .app-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+  .app-info p { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; line-height: 1.8; color: #2a2520; margin-bottom: 1.5rem; }
+
+  .detail-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1rem; }
+  .detail-list li { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); display: flex; align-items: flex-start; gap: 0.8rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line); }
+  .detail-list li::before { content: '▸'; color: var(--gold); font-size: 0.7rem; margin-top: 0.25rem; flex-shrink: 0; }
+
+  .img-block { width: 100%; background: var(--cream); border: 1px solid var(--line); overflow: hidden; }
+  .img-block img { width: 100%; height: auto; display: block; }
+  .img-caption { padding: 1rem 1.5rem; border-top: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--muted); }
+
+  .robot-dark { background: var(--ink); color: var(--paper); padding: 3rem; position: relative; overflow: hidden; }
+  .robot-dark::before { content: attr(data-icon); position: absolute; right: -1rem; bottom: -1rem; font-size: 10rem; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; }
+  .robot-dark h3 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--gold); margin-bottom: 0.5rem; }
+  .robot-dark .sub-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(245,240,232,0.4); margin-bottom: 1.5rem; }
+  .robot-dark p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; line-height: 1.7; color: rgba(245,240,232,0.8); margin-bottom: 1rem; }
+  .robot-dark .formula-display { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.8); margin: 1.5rem 0; padding: 1rem 1.5rem; border-left: 3px solid var(--gold); }
+  .robot-tags { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.5rem; }
+  .robot-tag { padding: 0.4rem 1rem; border: 1px solid rgba(184,134,11,0.4); color: rgba(184,134,11,0.9); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.3s; }
+  .robot-tag:hover { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+
+  /* Three pillars */
+  .pillars-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .pillars-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .pillars-section h2 em { color: var(--gold); font-style: italic; }
+  .pillars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; }
+  .pillar-card { border: 1px solid var(--line); padding: 2.5rem 2rem; position: relative; overflow: hidden; transition: border-color 0.3s, transform 0.3s; }
+  .pillar-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+  .pillar-card::before { content: attr(data-num); position: absolute; right: -0.5rem; bottom: -1rem; font-family: 'Cormorant Garamond', serif; font-size: 7rem; font-weight: 300; color: rgba(184,134,11,0.07); pointer-events: none; line-height: 1; }
+  .pillar-num { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .pillar-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--ink); margin-bottom: 0.8rem; }
+  .pillar-card .eq { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; color: var(--muted); padding: 0.8rem 1.2rem; background: var(--cream); border-left: 2px solid var(--gold); margin: 1rem 0; }
+  .pillar-card p { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--muted); line-height: 1.6; }
+  .pillar-apps { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1rem; }
+  .pillar-apps li { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+  .pillar-apps li::before { content: '▸'; color: var(--gold); font-size: 0.65rem; }
+
+  /* Quote */
+  .quote-block { padding: 4rem 3rem; text-align: center; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 5rem 0; }
+  .quote-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 300; font-style: italic; color: var(--ink); line-height: 1.5; max-width: 700px; margin: 0 auto; }
+  .quote-text strong { font-weight: 600; color: var(--gold); font-style: normal; }
+
+  /* Page nav */
+  .page-nav { display: flex; justify-content: flex-end; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--line); }
+  .nav-arrow { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--ink); transition: gap 0.3s; }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .intro-block, .app-grid, .pillars-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html" class="active">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+     <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+    <li><a href="Functions-of-several-variables.html">Functions</a></li>
+    <li><a href="srob.html">Robotics</a></li>
+   </ul>
+</nav>
+
+<header class="hero-banner">
+  <p class="hero-eyebrow">Chapter 07 · Applied Systems</p>
+  <h1 class="hero-title">Differential Equations<br>in <em>Robotics</em></h1>
+  <div class="hero-formula">θ'' + cθ' + kθ = 0</div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Intro -->
+  <div class="intro-block reveal">
+    <div class="intro-aside">
+      <p class="section-tag">Why It Matters</p>
+      <h2 class="aside-heading">The <em>mathematics</em> of motion</h2>
+      <div class="aside-line"></div>
+      <p class="aside-note">Every movement a robot makes — from joint rotation to drone stabilization — is governed by differential equations that describe how position, velocity, and force change continuously in time.</p>
+    </div>
+    <div class="intro-body">
+      <p class="lead-p">Differential equations play a vital role in robotics because they describe how a robot moves, changes position, controls speed, and responds to external forces.</p>
+      <p>Every robotic system involves continuously changing variables such as displacement, velocity, acceleration, torque, and angular position — all of which can be modelled using differential equations.</p>
+      <p>Robotics engineers use differential equations to design, simulate, and control robots accurately and efficiently. Without them, precise automated motion would simply not be possible.</p>
+    </div>
+  </div>
+
+  <!-- Three Application Pillars -->
+  <div class="pillars-section reveal">
+    <div class="section-tag">Core Applications</div>
+    <h2>Three Domains of <em>Robotic</em> DE</h2>
+    <p class="sub-desc">How differential equations govern different classes of robotic systems</p>
+
+    <div class="pillars-grid">
+      <div class="pillar-card" data-num="01">
+        <div class="pillar-num">Application 01 · Manipulation</div>
+        <h3>Robotic Arm Control</h3>
+        <div class="eq">θ'' + cθ' + kθ = 0</div>
+        <p>Joint angle, angular velocity, and angular acceleration are computed and controlled using second-order ODEs for each joint of a manipulator arm.</p>
+        <ul class="pillar-apps">
+          <li>Industrial pick-and-place</li>
+          <li>Surgical robotics</li>
+          <li>Assembly line automation</li>
+        </ul>
+      </div>
+
+      <div class="pillar-card" data-num="02">
+        <div class="pillar-num">Application 02 · Navigation</div>
+        <h3>Mobile Robot Motion</h3>
+        <div class="eq">dx/dt = v cosθ, dy/dt = v sinθ</div>
+        <p>Position and orientation of autonomous robots are continuously updated using kinematic differential equations that relate velocity to position change.</p>
+        <ul class="pillar-apps">
+          <li>Warehouse logistics robots</li>
+          <li>Autonomous delivery vehicles</li>
+          <li>Swarm robotics</li>
+        </ul>
+      </div>
+
+      <div class="pillar-card" data-num="03">
+        <div class="pillar-num">Application 03 · Aerial</div>
+        <h3>Drone Flight Control</h3>
+        <div class="eq">m(d²x/dt²) = F</div>
+        <p>Drone dynamics — including pitch, roll, yaw, and altitude — are governed by Newton's second law expressed as differential equations.</p>
+        <ul class="pillar-apps">
+          <li>Package delivery drones</li>
+          <li>Aerial surveillance</li>
+          <li>Search and rescue UAVs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Robotic Arm Deep Dive -->
+  <div class="app-section reveal">
+    <div class="section-tag">Deep Dive · Application 01</div>
+    <h2>Robotic Arm <em>Motion</em> Control</h2>
+    <p class="sub-desc">Computing joint kinematics and dynamics using second-order differential equations</p>
+
+    <div class="app-grid">
+      <div class="robot-dark" data-icon="🦾">
+        <h3>Joint Dynamics</h3>
+        <div class="sub-label">Mathematical model for a single joint</div>
+        <div class="formula-display">θ'' + cθ' + kθ = 0</div>
+
+        <div style="margin-bottom:1rem;">
+          <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,235,224,0.4);margin-bottom:0.8rem;">Variables</div>
+          <div style="display:flex;flex-wrap:wrap;gap:1.2rem;">
+            <div style="display:flex;align-items:baseline;gap:0.5rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--gold);">θ</span><span style="font-size:0.65rem;color:rgba(240,235,224,0.5);">Joint Angle</span></div>
+            <div style="display:flex;align-items:baseline;gap:0.5rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--gold);">θ'</span><span style="font-size:0.65rem;color:rgba(240,235,224,0.5);">Angular Velocity</span></div>
+            <div style="display:flex;align-items:baseline;gap:0.5rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--gold);">θ''</span><span style="font-size:0.65rem;color:rgba(240,235,224,0.5);">Angular Acceleration</span></div>
+          </div>
+        </div>
+
+        <p>When a robotic arm picks and places an object on an assembly line, differential equations determine the exact joint angles, movement speed, acceleration profile, and force applied at every instant of the trajectory.</p>
+        <div class="robot-tags">
+          <span class="robot-tag">Joint Angle Control</span>
+          <span class="robot-tag">Velocity Profiling</span>
+          <span class="robot-tag">Trajectory Planning</span>
+          <span class="robot-tag">Force Control</span>
+        </div>
+      </div>
+      <div>
+        <div class="img-block">
+          <img src="PLACE_ROBOTIC_ARM_IMAGE_HERE" alt="Robotic arm picking and placing an object">
+          <div class="img-caption">Industrial robotic arm performing pick-and-place operations — governed by joint dynamics DEs</div>
+        </div>
+        <div style="margin-top:1.5rem;padding:1.5rem;background:var(--cream);border-left:3px solid var(--gold);">
+          <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--muted);font-style:italic;line-height:1.7;">D.E governs: joint angles · movement speed · acceleration · force applied · energy consumption</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Robot Deep Dive -->
+  <div class="app-section reveal">
+    <div class="section-tag">Deep Dive · Application 02</div>
+    <h2>Mobile Robot <em>Navigation</em></h2>
+    <p class="sub-desc">Kinematic equations describing continuous position and orientation updates</p>
+
+    <div class="app-grid">
+      <div>
+        <div class="img-block">
+          <img src="PLACE_MOBILE_ROBOT_NAVIGATION_IMAGE_HERE" alt="Mobile robot navigating around obstacles showing multiple path options">
+          <div class="img-caption">Autonomous robot navigation — paths A, B, C representing different trajectory solutions to the kinematic DEs</div>
+        </div>
+        <div style="margin-top:1.5rem;padding:1.5rem;background:var(--cream);border-left:3px solid var(--gold);">
+          <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--muted);font-style:italic;line-height:1.7;">Autonomous warehouse robots use these equations to navigate between locations while continuously avoiding obstacles.</p>
+        </div>
+      </div>
+
+      <div class="robot-dark" data-icon="🤖">
+        <h3>Kinematic Model</h3>
+        <div class="sub-label">Unicycle model differential equations</div>
+        <div class="formula-display">dx/dt = v cosθ</div>
+        <div class="formula-display" style="margin-top:-0.5rem;">dy/dt = v sinθ</div>
+
+        <div style="margin-bottom:1rem;">
+          <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,235,224,0.4);margin-bottom:0.8rem;">Variables</div>
+          <div style="display:flex;flex-wrap:wrap;gap:1.2rem;">
+            <div style="display:flex;align-items:baseline;gap:0.5rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--gold);">x, y</span><span style="font-size:0.65rem;color:rgba(240,235,224,0.5);">Position Coordinates</span></div>
+            <div style="display:flex;align-items:baseline;gap:0.5rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--gold);">v</span><span style="font-size:0.65rem;color:rgba(240,235,224,0.5);">Velocity</span></div>
+            <div style="display:flex;align-items:baseline;gap:0.5rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--gold);">θ</span><span style="font-size:0.65rem;color:rgba(240,235,224,0.5);">Orientation Angle</span></div>
+          </div>
+        </div>
+
+        <p>By integrating these differential equations over time, the robot's complete trajectory is computed. The equations are solved numerically in real-time onboard the robot's processor.</p>
+        <div class="robot-tags">
+          <span class="robot-tag">Path Planning</span>
+          <span class="robot-tag">Obstacle Avoidance</span>
+          <span class="robot-tag">SLAM</span>
+          <span class="robot-tag">Odometry</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drone Deep Dive -->
+  <div class="app-section reveal">
+    <div class="section-tag">Deep Dive · Application 03</div>
+    <h2>Drone <em>Flight</em> Control</h2>
+    <p class="sub-desc">Newton's second law as a differential equation governing aerial stability</p>
+
+    <div class="app-grid">
+      <div class="robot-dark" data-icon="✈">
+        <h3>Flight Dynamics</h3>
+        <div class="sub-label">Newton's second law applied to a drone</div>
+        <div class="formula-display">m(d²x/dt²) = F</div>
+
+        <div style="margin-bottom:1rem;">
+          <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(240,235,224,0.4);margin-bottom:0.8rem;">Variables</div>
+          <div style="display:flex;flex-wrap:wrap;gap:1.2rem;">
+            <div style="display:flex;align-items:baseline;gap:0.5rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--gold);">m</span><span style="font-size:0.65rem;color:rgba(240,235,224,0.5);">Mass of drone</span></div>
+            <div style="display:flex;align-items:baseline;gap:0.5rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--gold);">F</span><span style="font-size:0.65rem;color:rgba(240,235,224,0.5);">Applied Force from rotors</span></div>
+            <div style="display:flex;align-items:baseline;gap:0.5rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-style:italic;color:var(--gold);">d²x/dt²</span><span style="font-size:0.65rem;color:rgba(240,235,224,0.5);">Acceleration</span></div>
+          </div>
+        </div>
+
+        <p>A drone delivering a package must continuously compensate for wind disturbances, payload shifts, and battery variations while maintaining precise altitude, attitude, and trajectory.</p>
+        <p>PID controllers onboard solve these differential equations in real-time hundreds of times per second.</p>
+        <div class="robot-tags">
+          <span class="robot-tag">Altitude Control</span>
+          <span class="robot-tag">Flight Stabilization</span>
+          <span class="robot-tag">Obstacle Avoidance</span>
+          <span class="robot-tag">Autonomous Navigation</span>
+        </div>
+      </div>
+      <div>
+        <div class="img-block">
+          <img src="PLACE_DRONE_IMAGE_HERE" alt="Drone with controller demonstrating flight control system">
+          <div class="img-caption">Drone flight control system — multiple DEs govern roll, pitch, yaw, and altitude simultaneously</div>
+        </div>
+        <div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:0.8rem;">
+          <div style="padding:1rem 1.5rem;border:1px solid var(--line);font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--muted);">Pitch axis: I<sub>xx</sub> φ'' = τ<sub>x</sub> + disturbances</div>
+          <div style="padding:1rem 1.5rem;border:1px solid var(--line);font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--muted);">Roll axis: I<sub>yy</sub> θ'' = τ<sub>y</sub> + disturbances</div>
+          <div style="padding:1rem 1.5rem;border:1px solid var(--line);font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--muted);">Yaw axis: I<sub>zz</sub> ψ'' = τ<sub>z</sub> + disturbances</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quote -->
+  <div class="quote-block reveal">
+    <p class="quote-text">Without differential equations, <strong>robots could not move</strong> smoothly, accurately, or autonomously. They are the mathematical language of all robotic motion.</p>
+  </div>
+
+  <!-- Page nav -->
+  <div class="page-nav">
+    <a href="lab-assessments.html" class="nav-arrow">
+      <div style="text-align:right">
+        <div class="nav-arrow-label">Next Section</div>
+        <div class="nav-arrow-title">Lab Assessments</div>
+      </div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <p>K.L.E Technological University · 25EMAB102</p>
+  <span class="footer-eq">θ'' + cθ' + kθ = 0</span>
+  <p>Guide: Dr. Narayan Swamy</p>
+</footer>
+
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

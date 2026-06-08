@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Index — D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --rust: #8b3a0f;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --dark: #1a1510;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--dark);
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Radial glow background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    height: 60vh;
+    background: radial-gradient(ellipse, rgba(184,134,11,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.2rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(184,134,11,0.2);
+    background: rgba(26,21,16,0.9);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: rgba(245,240,232,0.5);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--paper); }
+
+  /* Hero */
+  .page-hero {
+    position: relative;
+    z-index: 1;
+    padding: 10rem 3rem 5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .page-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.1s ease forwards;
+  }
+
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(4.5rem, 10vw, 8rem);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 0.95;
+    color: var(--paper);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.25s ease forwards;
+  }
+
+  .page-title span {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .page-desc {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: rgba(245,240,232,0.6);
+    max-width: 500px;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s ease forwards;
+  }
+
+  /* Index list */
+  .index-container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 3rem 6rem;
+  }
+
+  .index-list {
+    list-style: none;
+    border-top: 1px solid rgba(184,134,11,0.2);
+  }
+
+  .index-list li {
+    border-bottom: 1px solid rgba(184,134,11,0.12);
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.5s, transform 0.5s;
+  }
+
+  .index-list li.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .index-item {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.4rem 0;
+    cursor: pointer;
+    transition: padding-left 0.3s;
+    position: relative;
+  }
+
+  .index-item::after {
+    content: '→';
+    position: absolute;
+    right: 0;
+    color: var(--gold);
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    transform: translateX(-8px);
+    font-size: 0.9rem;
+  }
+
+  .index-item:hover { padding-left: 1rem; }
+  .index-item:hover::after { opacity: 1; transform: translateX(0); }
+
+  .idx-num {
+    font-size: 0.6rem;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    min-width: 2.5rem;
+    font-weight: 500;
+  }
+
+  .idx-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--paper);
+    transition: color 0.3s;
+  }
+
+  .index-item:hover .idx-name {
+    color: var(--gold);
+  }
+
+  .idx-tag {
+    margin-left: auto;
+    margin-right: 2.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .tag {
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid rgba(184,134,11,0.3);
+    color: rgba(184,134,11,0.7);
+    border-radius: 2px;
+  }
+
+  /* Subitems (numerical methods) */
+  .sub-list {
+    padding: 0 0 1.2rem 4.5rem;
+    display: none;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sub-list.open {
+    display: flex;
+  }
+
+  .sub-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: rgba(245,240,232,0.5);
+    font-size: 0.8rem;
+    transition: color 0.3s;
+    cursor: pointer;
+    padding: 0.3rem 0;
+  }
+
+  .sub-item::before {
+    content: '◦';
+    color: var(--gold);
+    font-size: 0.7rem;
+  }
+
+  .sub-item:hover {
+    color: var(--paper);
+  }
+
+  .toggle-icon {
+    margin-left: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--gold);
+    transition: transform 0.3s;
+  }
+
+  .toggle-icon.open {
+    transform: rotate(90deg);
+  }
+
+  /* Stats strip */
+  .stats-strip {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(184,134,11,0.2);
+    border-bottom: 1px solid rgba(184,134,11,0.2);
+    display: flex;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .stat-block {
+    flex: 1;
+    padding: 2rem;
+    text-align: center;
+    border-right: 1px solid rgba(184,134,11,0.15);
+  }
+
+  .stat-block:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    font-weight: 300;
+    color: var(--gold);
+    display: block;
+  }
+
+  .stat-lbl {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.4);
+    margin-top: 0.3rem;
+  }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid rgba(184,134,11,0.15);
+    padding: 2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  footer p {
+    font-size: 0.62rem;
+    color: rgba(245,240,232,0.35);
+    letter-spacing: 0.1em;
+  }
+
+  .footer-eq {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: rgba(184,134,11,0.6);
+    font-style: italic;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    .page-hero, .index-container { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .nav-links { display: none; }
+    .idx-tag { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html" class="active">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+     <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+    <li><a href="Functions-of-several-variables.html">Functions</a></li>
+    <li><a href="srob.html">Robotics</a></li>
+   </ul>
+</nav>
+
+
+
+
+<header class="page-hero">
+  <p class="page-label">Course 25EMAB102 · Contents</p>
+  <h1 class="page-title"><span>In</span>dex</h1>
+  <p class="page-desc">A complete guide to the topics covered in this differential equations portfolio.</p>
+</header>
+
+<div class="stats-strip">
+  <div class="stat-block">
+    <span class="stat-num">19</span>
+    <div class="stat-lbl">Topics</div>
+  </div>
+  <div class="stat-block">
+    <span class="stat-num">4</span>
+    <div class="stat-lbl">Numerical Methods</div>
+  </div>
+  <div class="stat-block">
+    <span class="stat-num">2nd</span>
+    <div class="stat-lbl">Semester</div>
+  </div>
+  <div class="stat-block">
+    <span class="stat-num">∞</span>
+    <div class="stat-lbl">Applications</div>
+  </div>
+</div>
+
+<div class="index-container">
+  <ul class="index-list" id="indexList"></ul>
+</div>
+
+<footer>
+  <p>K.L.E Technological University · akash pp</p>
+  <span class="footer-eq">∂u/∂t = k ∂²u/∂x²</span>
+  <p>Dr. Narayan Swamy</p>
+</footer>
+
+<script>
+const topics = [
+  { num: '01', name: 'Introduction to Differential Equations', tags: ['Core', 'Theory'] },
+  { num: '02', name: 'First Order System Dynamics', tags: ['Dynamics', 'Core'] },
+  { num: '03', name: 'Direction Fields', tags: ['Visual', 'Analysis'] },
+  {
+    num: '04', name: 'Numerical Methods', tags: ['Computation'],
+    sub: ['Euler Method', 'Heun Method', 'Midpoint Method', 'Runge-Kutta Method']
+  },
+  { num: '05', name: 'Separable Differential Equations', tags: ['ODE', 'Technique'] },
+  { num: '06', name: 'Linear Differential Equations', tags: ['ODE', 'Linear'] },
+  { num: '07', name: 'Second Order Differential Equations', tags: ['ODE', 'Advanced'] },
+  { num: '08', name: 'Homogeneous & Non-Homogeneous Equations', tags: ['Classification'] },
+  { num: '09', name: 'Spring-Mass-Damper System', tags: ['Engineering', 'Applied'] },
+  { num: '10', name: 'Frequency Response & Resonance', tags: ['Vibration', 'Applied'] },
+  { num: '11', name: 'Functions of Several Variables', tags: ['Multivariable'] },
+  { num: '12', name: 'Partial Derivatives & Gradient', tags: ['Calculus'] },
+  { num: '13', name: 'Maxima and Minima', tags: ['Optimization'] },
+  { num: '14', name: 'Lagrange Multipliers', tags: ['Optimization'] },
+  { num: '15', name: 'Partial Differential Equations (PDEs)', tags: ['PDE', 'Advanced'] },
+  { num: '16', name: 'Heat Equation', tags: ['PDE', 'Applied'] },
+  { num: '17', name: 'Real Life Applications', tags: ['Engineering', 'Case Study'] },
+  { num: '18', name: 'Lab Assessment', tags: ['Assessment'] },
+  { num: '19', name: 'Conclusion', tags: ['Summary'] },
+];
+
+const list = document.getElementById('indexList');
+
+topics.forEach((t, i) => {
+  const li = document.createElement('li');
+  const hasSub = t.sub && t.sub.length > 0;
+
+  const tagsHTML = t.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+  const toggleHTML = hasSub ? `<span class="toggle-icon" id="toggle-${i}">▶</span>` : '';
+
+  li.innerHTML = `
+    <div class="index-item" ${hasSub ? `onclick="toggleSub(${i})"` : ''}>
+      <span class="idx-num">${t.num}</span>
+      <span class="idx-name">${t.name}</span>
+      ${toggleHTML}
+      <div class="idx-tag">${tagsHTML}</div>
+    </div>
+    ${hasSub ? `<div class="sub-list" id="sub-${i}">${t.sub.map(s => `<div class="sub-item">${s}</div>`).join('')}</div>` : ''}
+  `;
+
+  list.appendChild(li);
+});
+
+function toggleSub(i) {
+  const sub = document.getElementById(`sub-${i}`);
+  const icon = document.getElementById(`toggle-${i}`);
+  sub.classList.toggle('open');
+  icon.classList.toggle('open');
+}
+
+// Stagger reveal
+const items = list.querySelectorAll('li');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const allItems = list.querySelectorAll('li');
+      allItems.forEach((item, i) => {
+        setTimeout(() => item.classList.add('visible'), i * 55);
+      });
+      obs.disconnect();
+    }
+  });
+}, { threshold: 0.05 });
+obs.observe(list);
+</script>
+</body>
+</html>

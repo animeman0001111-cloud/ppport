@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numerical Methods — D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --rust: #8b3a0f;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --dark: #1a1510;
+    --forest: #1e2b1e;
+    --warm-red: #7a1f0f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--paper); color: var(--ink); font-family: 'JetBrains Mono', monospace; min-height: 100vh; }
+
+  .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--gold); z-index: 300; transition: width 0.1s; width: 0%; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    padding: 1.2rem 2.5rem; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--line);
+    background: rgba(245,240,232,0.92); backdrop-filter: blur(12px);
+  }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  .hero-banner {
+    margin-top: 64px; background: var(--forest); padding: 6rem 3rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-banner::before {
+    content: 'dy/dx'; position: absolute; right: -1rem; bottom: -1rem;
+    font-family: 'Cormorant Garamond', serif; font-size: 16rem; font-weight: 300;
+    color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; white-space: nowrap;
+  }
+  .hero-banner::after {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px);
+    background-size: 50px 50px; pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 1; }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 7vw, 6rem); font-weight: 300; line-height: 1.05; color: #f0ebe0; max-width: 700px; opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards; }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-formula { display: inline-block; margin-top: 2.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.6); border-left: 3px solid var(--gold); padding-left: 1.2rem; opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards; }
+
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+
+  .block-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .block-section > h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: var(--ink); margin-bottom: 0.4rem; }
+  .sub-desc { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  /* Given block */
+  .given-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); margin-bottom: 3rem;
+  }
+  .given-cell { background: var(--cream); padding: 1.5rem 1.2rem; }
+  .given-cell label { display: block; font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .given-cell .val { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-style: italic; color: var(--ink); }
+
+  /* Method cards */
+  .method-grid { display: flex; flex-direction: column; gap: 2rem; }
+
+  .method-card { border: 1px solid var(--line); overflow: hidden; transition: box-shadow 0.3s, transform 0.3s; }
+  .method-card:hover { box-shadow: 0 8px 40px rgba(30,43,30,0.1); transform: translateY(-2px); }
+
+  .method-header { padding: 1.2rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .method-header.m1 { background: var(--forest); }
+  .method-header.m2 { background: #1a2b3a; }
+  .method-header.m3 { background: #2d1b4e; }
+  .method-header.m4 { background: var(--warm-red); }
+
+  .method-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: #f0ebe0; }
+  .method-num { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; background: rgba(255,255,255,0.1); color: rgba(240,235,224,0.7); padding: 0.3rem 0.8rem; }
+
+  .method-body { padding: 2rem; background: var(--cream); display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: start; }
+  .method-body p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; line-height: 1.75; color: var(--muted); }
+
+  .formula-block {
+    background: var(--forest); color: #f0ebe0;
+    padding: 1.5rem 1.8rem; border-left: 3px solid var(--gold);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.9;
+  }
+  .formula-block .comment { color: rgba(184,134,11,0.6); }
+  .formula-block .kw { color: var(--gold); }
+  .formula-block .val { color: #8fd9c4; }
+
+  .answer-row { display: flex; align-items: center; gap: 0.75rem; margin-top: 1rem; }
+  .answer-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--forest); color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; padding: 0.5rem 1.2rem; letter-spacing: 0.05em; }
+  .answer-badge::before { content: '✓'; color: #8fd9c4; }
+
+  /* Steps list */
+  .steps { list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .steps li { display: flex; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--ink); line-height: 1.5; }
+  .steps li:last-child { border-bottom: none; }
+  .step-num { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--gold); min-width: 1.5rem; margin-top: 0.25rem; }
+
+  /* Comparison table */
+  .compare-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+  .compare-table thead tr { background: var(--ink); }
+  .compare-table th { padding: 1rem 1.5rem; text-align: left; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--paper); font-weight: 400; }
+  .compare-table th:last-child { color: var(--gold); }
+  .compare-table td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--muted); }
+  .compare-table tr:hover td { background: var(--cream); }
+  .compare-table td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--ink); }
+  .compare-table td:last-child { font-family: 'JetBrains Mono', monospace; color: var(--forest); font-weight: 500; }
+  .best-row td { background: rgba(184,134,11,0.06); }
+  .best-row td:first-child { color: var(--warm-red); }
+  .best-row td:last-child { color: var(--warm-red); }
+
+  /* Conclusion */
+  .conclusion-block { background: var(--forest); padding: 3rem; border-left: 4px solid var(--gold); }
+  .conclusion-block h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--gold); margin-bottom: 1.5rem; }
+  .conclusion-block p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; line-height: 1.8; color: rgba(240,235,224,0.75); margin-bottom: 0.75rem; }
+  .conclusion-block p:last-child { color: rgba(240,235,224,0.55); margin-bottom: 0; }
+
+  .page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--line); }
+  .nav-arrow { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--ink); transition: gap 0.3s; }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+    .given-grid { grid-template-columns: 1fr 1fr; }
+    .method-body { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html" class="active">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+     <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+    <li><a href="Functions-of-several-variables.html">Functions</a></li>
+    <li><a href="srob.html">Robotics</a></li>
+   </ul>
+</nav>
+
+
+<header class="hero-banner">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Chapter 04 · Approximation</p>
+    <h1 class="hero-title">Numerical<br><em>Methods</em></h1>
+    <div class="hero-formula">dy/dx = x + y,&nbsp; y(0) = 1</div>
+  </div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Setup -->
+  <div class="block-section reveal">
+    <div class="section-tag">Problem Setup</div>
+    <h2>Given Information</h2>
+    <p class="sub-desc">Find y(0.1) using four numerical methods with h = 0.1</p>
+    <div class="given-grid">
+      <div class="given-cell"><label>Equation</label><div class="val">dy/dx = x + y</div></div>
+      <div class="given-cell"><label>Initial Condition</label><div class="val">y(0) = 1</div></div>
+      <div class="given-cell"><label>Step Size</label><div class="val">h = 0.1</div></div>
+      <div class="given-cell"><label>Find</label><div class="val">y(0.1)</div></div>
+    </div>
+  </div>
+
+  <!-- Methods -->
+  <div class="block-section reveal">
+    <div class="section-tag">Numerical Techniques</div>
+    <h2>Four <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Approaches</em> Compared</h2>
+    <p class="sub-desc">From simple to precise — each method improves on accuracy</p>
+
+    <div class="method-grid">
+
+      <!-- Euler -->
+      <div class="method-card">
+        <div class="method-header m1">
+          <h3>Euler Method</h3>
+          <span class="method-num">Method 01</span>
+        </div>
+        <div class="method-body">
+          <div>
+            <p>The simplest one-step method — uses only the slope at the current point to project forward. Fast to compute, but accumulates error over multiple steps.</p>
+            <ul class="steps" style="margin-top:1.2rem;">
+              <li><span class="step-num">01</span>Compute f(x₀, y₀) = f(0, 1) = 0 + 1 = 1</li>
+              <li><span class="step-num">02</span>Apply formula: y₁ = y₀ + h·f(x₀, y₀)</li>
+              <li><span class="step-num">03</span>y₁ = 1 + (0.1)(1) = 1.1000</li>
+            </ul>
+            <div class="answer-row"><div class="answer-badge">y(0.1) = 1.1000</div></div>
+          </div>
+          <div class="formula-block">
+            <span class="comment">// Formula</span><br>
+            y<sub>n+1</sub> = yₙ + h·f(xₙ, yₙ)<br><br>
+            <span class="comment">// Calculation</span><br>
+            f(0, 1) = 0 + 1 = <span class="val">1</span><br>
+            y₁ = 1 + (0.1)(1)<br>
+            y₁ = <span class="val">1.1000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Heun -->
+      <div class="method-card">
+        <div class="method-header m2">
+          <h3>Heun Method <span style="font-size:0.9rem;opacity:0.6">(Improved Euler)</span></h3>
+          <span class="method-num">Method 02</span>
+        </div>
+        <div class="method-body">
+          <div>
+            <p>A predictor-corrector scheme that averages the slopes at the start and end of the interval — reducing error significantly compared to Euler.</p>
+            <ul class="steps" style="margin-top:1.2rem;">
+              <li><span class="step-num">01</span>Predictor: y* = 1 + 0.1(1) = 1.1</li>
+              <li><span class="step-num">02</span>Slopes: f(0,1) = 1, f(0.1, 1.1) = 1.2</li>
+              <li><span class="step-num">03</span>Corrector: y₁ = 1 + (0.1/2)(1 + 1.2) = 1.1100</li>
+            </ul>
+            <div class="answer-row"><div class="answer-badge">y(0.1) = 1.1100</div></div>
+          </div>
+          <div class="formula-block">
+            <span class="kw">// Predictor</span><br>
+            y* = yₙ + h·f(xₙ, yₙ)<br>
+            y* = 1 + 0.1(1) = <span class="val">1.1</span><br><br>
+            <span class="kw">// Corrector</span><br>
+            y₁ = yₙ + h/2 [f(xₙ,yₙ) + f(xₙ₊₁,y*)]<br>
+            y₁ = 1 + 0.05(1 + 1.2)<br>
+            y₁ = <span class="val">1.1100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Midpoint -->
+      <div class="method-card">
+        <div class="method-header m3">
+          <h3>Midpoint Method</h3>
+          <span class="method-num">Method 03</span>
+        </div>
+        <div class="method-body">
+          <div>
+            <p>Uses the slope evaluated at the interval midpoint — a second-order estimate that intuitively centres the derivative within the step.</p>
+            <ul class="steps" style="margin-top:1.2rem;">
+              <li><span class="step-num">01</span>x_mid = 0.05, y_mid = 1 + (0.05)(1) = 1.05</li>
+              <li><span class="step-num">02</span>f(0.05, 1.05) = 0.05 + 1.05 = 1.10</li>
+              <li><span class="step-num">03</span>y₁ = 1 + (0.1)(1.10) = 1.1100</li>
+            </ul>
+            <div class="answer-row"><div class="answer-badge">y(0.1) = 1.1100</div></div>
+          </div>
+          <div class="formula-block">
+            <span class="kw">// Midpoint values</span><br>
+            x_mid = xₙ + h/2 = <span class="val">0.05</span><br>
+            y_mid = yₙ + (h/2)·f(xₙ,yₙ) = <span class="val">1.05</span><br><br>
+            <span class="kw">// Final step</span><br>
+            f(0.05, 1.05) = <span class="val">1.10</span><br>
+            y₁ = 1 + (0.1)(1.10) = <span class="val">1.1100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RK4 -->
+      <div class="method-card">
+        <div class="method-header m4">
+          <h3>Runge-Kutta 4th Order — RK4 ★</h3>
+          <span class="method-num">Method 04</span>
+        </div>
+        <div class="method-body">
+          <div>
+            <p>The gold-standard numerical ODE solver. Combines four slope estimates with a weighted average — achieves fourth-order accuracy with each step.</p>
+            <ul class="steps" style="margin-top:1.2rem;">
+              <li><span class="step-num">k₁</span>h·f(0, 1) = 0.1000</li>
+              <li><span class="step-num">k₂</span>h·f(0.05, 1.05) = 0.1100</li>
+              <li><span class="step-num">k₃</span>h·f(0.05, 1.055) = 0.1105</li>
+              <li><span class="step-num">k₄</span>h·f(0.1, 1.1105) = 0.12105</li>
+              <li><span class="step-num">ans</span>y₁ = 1 + (1/6)[k₁ + 2k₂ + 2k₃ + k₄] = <strong>1.11034</strong></li>
+            </ul>
+            <div class="answer-row"><div class="answer-badge">y(0.1) = 1.11034</div></div>
+          </div>
+          <div class="formula-block">
+            k₁ = h·f(xₙ, yₙ)<br>
+            k₂ = h·f(xₙ+h/2, yₙ+k₁/2)<br>
+            k₃ = h·f(xₙ+h/2, yₙ+k₂/2)<br>
+            k₄ = h·f(xₙ+h, yₙ+k₃)<br><br>
+            <span class="kw">// Weighted sum</span><br>
+            y₁ = yₙ + (1/6)(k₁+2k₂+2k₃+k₄)<br><br>
+            k₁=<span class="val">0.1000</span> k₂=<span class="val">0.1100</span><br>
+            k₃=<span class="val">0.1105</span> k₄=<span class="val">0.12105</span><br>
+            y₁ = <span class="val">1.11034</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison -->
+  <div class="block-section reveal">
+    <div class="section-tag">Summary</div>
+    <h2>Results <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Comparison</em></h2>
+    <p class="sub-desc">All four methods applied to the same problem</p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Approach</th>
+          <th>Order</th>
+          <th>y(0.1)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Euler</td>
+          <td>Single slope at start</td>
+          <td>1st order</td>
+          <td>1.1000</td>
+        </tr>
+        <tr>
+          <td>Heun</td>
+          <td>Predictor-corrector</td>
+          <td>2nd order</td>
+          <td>1.1100</td>
+        </tr>
+        <tr>
+          <td>Midpoint</td>
+          <td>Midpoint slope estimate</td>
+          <td>2nd order</td>
+          <td>1.1100</td>
+        </tr>
+        <tr class="best-row">
+          <td>RK4 ★</td>
+          <td>Four-stage weighted average</td>
+          <td>4th order</td>
+          <td>1.11034</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Conclusion -->
+  <div class="reveal">
+    <div class="conclusion-block">
+      <h2>Conclusion</h2>
+      <p>The Euler Method is the simplest but least accurate — a useful teaching tool and rough estimate, but insufficient for engineering-grade problems.</p>
+      <p>Heun and Midpoint Methods both provide significantly better approximations by incorporating additional slope information, both converging to 1.1100.</p>
+      <p>The Runge-Kutta Fourth Order Method (RK4) gives the most accurate result at 1.11034 and is widely used in engineering, robotics, simulations, and control systems.</p>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <a href="#" class="nav-arrow" style="flex-direction:row-reverse;">
+      <div style="text-align:left">
+        <div class="nav-arrow-label">Previous</div>
+        <div class="nav-arrow-title">Patterns & Formulas</div>
+      </div>
+      <div class="nav-arrow-icon" style="transform:scaleX(-1);">→</div>
+    </a>
+    <a href="second-order-de.html" class="nav-arrow">
+      <div style="text-align:right">
+        <div class="nav-arrow-label">Next Chapter</div>
+        <div class="nav-arrow-title">2nd Order D.E.</div>
+      </div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+</div>
+
+<footer>
+  <p>K.L.E Technological University · D.E Assignment</p>
+  <span class="footer-eq">yₙ₊₁ = yₙ + (1/6)(k₁ + 2k₂ + 2k₃ + k₄)</span>
+  <p>Numerical Methods</p>
+</footer>
+
+<script>
+  window.addEventListener('scroll', () => {
+    const scrollTop = document.documentElement.scrollTop;
+    const docH = document.documentElement.scrollHeight - window.innerHeight;
+    document.getElementById('progressBar').style.width = (scrollTop / docH * 100) + '%';
+  });
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.06 });
+  reveals.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 2 — Robotic Arm Spring-Damper · D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --rust: #8b3a0f;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --sage: #4a5a4a;
+    --blue-dark: #1c2b3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'JetBrains Mono', monospace; min-height: 100vh; }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 1000; opacity: 0.5;
+  }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    padding: 1.2rem 2.5rem; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--line); background: rgba(245,240,232,0.92); backdrop-filter: blur(12px);
+  }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  .hero-banner {
+    margin-top: 64px; background: var(--blue-dark); padding: 6rem 3rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-banner::before {
+    content: 'mx″+cx′+kx=F';
+    position: absolute; right: -1rem; bottom: -1rem;
+    font-family: 'Cormorant Garamond', serif; font-size: 6rem; font-weight: 300;
+    color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; white-space: nowrap;
+  }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 7vw, 5.5rem); font-weight: 300; line-height: 1.05; color: #f0ebe0; max-width: 800px; opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards; }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-meta { display: flex; gap: 3rem; margin-top: 2.5rem; opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards; }
+  .hero-meta-item { display: flex; flex-direction: column; gap: 0.3rem; }
+  .hero-meta-label { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(184,134,11,0.7); }
+  .hero-meta-val { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: rgba(240,235,224,0.8); }
+  .hero-formula { display: inline-block; margin-top: 2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.6); border-left: 3px solid var(--gold); padding-left: 1.2rem; opacity: 0; animation: fadeUp 0.8s 0.55s ease forwards; }
+
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+
+  .intro-block { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; align-items: start; margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .intro-aside { position: sticky; top: 90px; }
+  .aside-heading { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; line-height: 1.2; color: var(--ink); }
+  .aside-heading em { font-style: italic; color: var(--gold); }
+  .aside-line { width: 40px; height: 2px; background: var(--gold); margin: 1.5rem 0; }
+  .aside-note { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-style: italic; color: var(--muted); line-height: 1.7; }
+  .intro-body p { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.85; color: #2a2520; margin-bottom: 1.5rem; }
+  .lead-p { font-size: 1.5rem !important; font-weight: 300; }
+
+  .formula-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; margin: 2.5rem 0; border-left: 4px solid var(--gold); position: relative; overflow: hidden; }
+  .formula-card::before { content: 'ω'; position: absolute; right: 1rem; top: -0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 8rem; color: rgba(255,255,255,0.04); pointer-events: none; font-style: italic; }
+  .formula-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .formula-eq { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-style: italic; }
+  .formula-vars { margin-top: 1.2rem; display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  .var-item { display: flex; align-items: baseline; gap: 0.5rem; }
+  .var-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; color: var(--gold); }
+  .var-desc { font-size: 0.68rem; color: rgba(240,235,224,0.6); letter-spacing: 0.05em; }
+
+  /* Params grid */
+  .params-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .params-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .params-section h2 em { color: var(--gold); font-style: italic; }
+  .sub-desc { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+  .params-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .param-cell { background: var(--cream); padding: 1.5rem; transition: background 0.3s; }
+  .param-cell:hover { background: var(--paper); }
+  .param-label { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+  .param-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-style: italic; color: var(--gold); line-height: 1; margin-bottom: 0.3rem; }
+  .param-val { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); }
+
+  /* Solution section */
+  .solution-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .solution-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .solution-section h2 em { color: var(--gold); font-style: italic; }
+  .sol-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+  .sol-steps-list { list-style: none; display: flex; flex-direction: column; gap: 0; counter-reset: step; }
+  .sol-steps-list li { counter-increment: step; display: flex; gap: 1.2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); padding: 1rem 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+  .sol-steps-list li::before { content: counter(step, decimal-leading-zero); font-size: 0.65rem; color: var(--gold); font-family: 'JetBrains Mono', monospace; margin-top: 0.3rem; flex-shrink: 0; width: 2rem; }
+  .dark-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; border-left: 4px solid var(--gold); }
+  .dark-card .d-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; }
+  .dark-card .d-row { margin-bottom: 1.2rem; padding-bottom: 1.2rem; border-bottom: 1px solid rgba(200,191,168,0.15); }
+  .dark-card .d-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .dark-card .d-title { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,235,224,0.4); margin-bottom: 0.5rem; }
+  .dark-card .d-eq { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-style: italic; line-height: 1.5; }
+  .dark-card .d-note { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: rgba(240,235,224,0.55); margin-top: 0.4rem; font-style: italic; }
+
+  /* Code section */
+  .code-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .code-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .code-section h2 em { color: var(--gold); font-style: italic; }
+  .code-block { background: #0d1117; border: 1px solid rgba(200,191,168,0.2); border-left: 4px solid var(--gold); padding: 2rem; overflow-x: auto; position: relative; margin-top: 2rem; }
+  .code-block::before { content: 'Python · RK4'; position: absolute; top: 0.8rem; right: 1rem; font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); opacity: 0.7; }
+  .code-block pre { font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; line-height: 1.75; color: #e6edf3; }
+  .kw { color: #ff7b72; } .fn { color: #d2a8ff; } .st { color: #a5d6ff; } .cm { color: #8b949e; font-style: italic; } .nm { color: #79c0ff; } .op { color: #f78166; }
+
+  /* Results */
+  .results-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .results-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .results-section h2 em { color: var(--gold); font-style: italic; }
+  .results-split { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+  .graph-block { background: var(--cream); border: 1px solid var(--line); overflow: hidden; margin-bottom: 1.5rem; }
+  .graph-block img { width: 100%; height: auto; display: block; }
+  .graph-caption { padding: 1rem 1.5rem; border-top: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--muted); }
+  .key-findings { display: flex; flex-direction: column; gap: 1rem; }
+  .finding { border: 1px solid var(--line); padding: 1.5rem; position: relative; overflow: hidden; transition: border-color 0.3s, transform 0.3s; }
+  .finding:hover { border-color: var(--gold); transform: translateX(4px); }
+  .finding::before { content: attr(data-icon); position: absolute; right: 1rem; bottom: -0.5rem; font-size: 3rem; color: rgba(184,134,11,0.07); line-height: 1; }
+  .finding-tag { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
+  .finding h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--ink); margin-bottom: 0.4rem; }
+  .finding p { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--muted); line-height: 1.6; }
+
+  /* Mass comparison cards */
+  .mass-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .mass-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .mass-section h2 em { color: var(--gold); font-style: italic; }
+  .mass-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+  .mass-cards { display: flex; flex-direction: column; gap: 1rem; }
+  .mass-card { display: grid; grid-template-columns: 80px 1fr; gap: 1.5rem; border: 1px solid var(--line); padding: 1.5rem; transition: border-color 0.3s; align-items: center; }
+  .mass-card:hover { border-color: var(--gold); }
+  .mass-num { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: var(--gold); line-height: 1; }
+  .mass-num span { font-size: 0.9rem; color: var(--muted); }
+  .mass-desc { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--ink); line-height: 1.6; }
+  .mass-desc strong { color: var(--gold); font-style: normal; font-weight: 400; }
+
+  /* Conclusion */
+  .conclusion-band { background: var(--ink); color: var(--paper); padding: 4rem 3rem; margin: 5rem 0; position: relative; overflow: hidden; }
+  .conclusion-band::before { content: 'ωₙ'; position: absolute; right: -1rem; bottom: -1.5rem; font-family: 'Cormorant Garamond', serif; font-size: 12rem; font-weight: 300; color: rgba(255,255,255,0.03); pointer-events: none; font-style: italic; }
+  .conclusion-band .c-label { font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .conclusion-band h3 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: #f0ebe0; margin-bottom: 1rem; }
+  .conclusion-band p { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.8; color: rgba(245,240,232,0.75); max-width: 700px; }
+
+  .page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--line); }
+  .nav-arrow { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--ink); transition: gap 0.3s; }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow.right { flex-direction: row-reverse; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .intro-block, .sol-grid, .results-split, .mass-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .params-grid { grid-template-columns: repeat(2, 1fr); }
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="lab_assessments.html">Lab Assessments</a></li>
+    <li><a href="lab_1.html">Lab 1</a></li>
+    <li><a href="lab_2.html" class="active">Lab 2</a></li>
+    <li><a href="lab_3.html">Lab 3</a></li>
+    <li><a href="lab_4.html">Lab 4</a></li>
+  </ul>
+</nav>
+
+<header class="hero-banner">
+  <p class="hero-eyebrow">Lab Experiment No. 02 · 30-04-2026</p>
+  <h1 class="hero-title">Robotic Arm —<br><em>Spring-Damper</em> System</h1>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Student</span>
+      <span class="hero-meta-val">Irum Bolar</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Division / Roll</span>
+      <span class="hero-meta-val">Y · 2506</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">SRN</span>
+      <span class="hero-meta-val">01FE25BAR006</span>
+    </div>
+  </div>
+  <div class="hero-formula">m(d²x/dt²) + c(dx/dt) + kx = F(t)</div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Intro -->
+  <div class="intro-block reveal">
+    <div class="intro-aside">
+      <p class="section-tag">Problem Statement</p>
+      <h2 class="aside-heading">Damped oscillation of a <em>robotic arm</em></h2>
+      <div class="aside-line"></div>
+      <p class="aside-note">A 10 kg robotic arm end-effector attached to a spring (k = 1 N/m) is displaced 50 m from equilibrium and released. External force: 10 N, damping coefficient: 8.</p>
+    </div>
+    <div class="intro-body">
+      <p class="lead-p">The motion of a spring-mass-damper system is governed by a second-order linear ODE. This models the position and velocity of a robotic arm under realistic mechanical constraints.</p>
+
+      <div class="formula-card">
+        <div class="formula-label">Governing Equation — Spring-Mass-Damper</div>
+        <div class="formula-eq">m(d²x/dt²) + c(dx/dt) + kx = F</div>
+        <div class="formula-vars">
+          <div class="var-item"><span class="var-sym">m</span><span class="var-desc">= mass (kg)</span></div>
+          <div class="var-item"><span class="var-sym">c</span><span class="var-desc">= damping coefficient</span></div>
+          <div class="var-item"><span class="var-sym">k</span><span class="var-desc">= spring stiffness (N/m)</span></div>
+          <div class="var-item"><span class="var-sym">F</span><span class="var-desc">= external force (N)</span></div>
+          <div class="var-item"><span class="var-sym">x(t)</span><span class="var-desc">= displacement from equilibrium</span></div>
+        </div>
+      </div>
+
+      <p>This is a second-order linear ODE representing simple harmonic motion with forcing. The RK4 numerical method is used to integrate the equations of motion over time.</p>
+    </div>
+  </div>
+
+  <!-- Parameters -->
+  <div class="params-section reveal">
+    <div class="section-tag">System Parameters</div>
+    <h2>Identification of <em>Parameters</em></h2>
+    <p class="sub-desc">Physical values substituted into the governing equation</p>
+    <div class="params-grid">
+      <div class="param-cell">
+        <div class="param-label">Mass</div>
+        <div class="param-sym">m</div>
+        <div class="param-val">10 kg</div>
+      </div>
+      <div class="param-cell">
+        <div class="param-label">Spring Stiffness</div>
+        <div class="param-sym">k</div>
+        <div class="param-val">50 N/m</div>
+      </div>
+      <div class="param-cell">
+        <div class="param-label">Damping Coefficient</div>
+        <div class="param-sym">c</div>
+        <div class="param-val">8 Ns/m</div>
+      </div>
+      <div class="param-cell">
+        <div class="param-label">External Force</div>
+        <div class="param-sym">F</div>
+        <div class="param-val">10 N</div>
+      </div>
+      <div class="param-cell">
+        <div class="param-label">Initial Displacement</div>
+        <div class="param-sym">x₀</div>
+        <div class="param-val">0.1 m</div>
+      </div>
+      <div class="param-cell">
+        <div class="param-label">Initial Velocity</div>
+        <div class="param-sym">v₀</div>
+        <div class="param-val">0.0 m/s</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytical Solution -->
+  <div class="solution-section reveal">
+    <div class="section-tag">Analytical Solution</div>
+    <h2>Solving the <em>ODE</em></h2>
+    <p class="sub-desc">Characteristic equation approach with particular integral</p>
+
+    <div class="sol-grid">
+      <ol class="sol-steps-list">
+        <li>Substitute values: 10(d²x/dt²) + 8(dx/dt) + 50x = 10</li>
+        <li>Form characteristic equation: 10d² + 8d + 50 = 0</li>
+        <li>Apply quadratic formula to find roots d = −0.4 ± 2.2i (complex conjugates → underdamped)</li>
+        <li>Write complementary solution with decaying cosine/sine terms</li>
+        <li>Find particular integral by assuming xₚ = A (constant)</li>
+        <li>Apply initial conditions x(0) = 0.1, x′(0) = 0 to determine C₁ and C₂</li>
+      </ol>
+
+      <div class="dark-card">
+        <div class="d-label">Complete Analytical Solution</div>
+        <div class="d-row">
+          <div class="d-title">Characteristic Equation</div>
+          <div class="d-eq">10d² + 8d + 50 = 0</div>
+          <div class="d-note">d = (−8 ± √(64 − 2000)) / 20</div>
+        </div>
+        <div class="d-row">
+          <div class="d-title">Complex Roots → Underdamped</div>
+          <div class="d-eq">d = −0.4 ± 2.2i</div>
+        </div>
+        <div class="d-row">
+          <div class="d-title">Complementary Solution</div>
+          <div class="d-eq">xc(t) = e^(−0.4t)(C₁ cos 2.2t + C₂ sin 2.2t)</div>
+        </div>
+        <div class="d-row">
+          <div class="d-title">Particular Solution</div>
+          <div class="d-eq">10(0) + 8(0) + 50A = 10 → A = 0.2</div>
+          <div class="d-note">xₚ = 0.2</div>
+        </div>
+        <div class="d-row">
+          <div class="d-title">General Solution</div>
+          <div class="d-eq">x(t) = e^(−0.4t)(C₁ cos 2.2t + C₂ sin 2.2t) + 0.2</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code -->
+  <div >
+    <img src="LAB2/1 (0).jpeg">
+    <div >
+  <div >
+     <img src="LAB2/1 (1).png">
+    <div >
+  <div >
+     <img src="LAB2/1 (2).png">
+    <div >
+  <div >
+     <img src="LAB2/1 (3).png">
+  <div >
+  <div >
+     <img src="LAB2/1 (4).png">
+  <div >
+  <div >
+    <img src="LAB2/1 (5).jpeg">
+    <div >
+  <div >
+     <img src="LAB2/1 (6).png">
+    <div >
+  <div >
+     <img src="LAB2/1 (7).png">
+    <div >
+  <div >
+     <img src="LAB2/1 (8).png">
+  <div >
+  <div >
+     <img src="LAB2/1 (9).png">
+  <div >
+    <div >
+     <img src="LAB2/1 (10).png">
+  <div >
+
+
+  <!-- Results -->
+  <div class="results-section reveal">
+    <div class="section-tag">Results &amp; Analysis</div>
+    <h2>Graph <em>Observations</em></h2>
+    <p class="sub-desc">Displacement vs time and velocity vs time for the robotic arm</p>
+
+    <div class="results-split">
+      <div>
+        <!-- DISPLACEMENT GRAPH -->
+        <div class="graph-block">
+          <img src="" alt="Damped Oscillation of Robotic Arm — Displacement vs Time">
+          <div class="graph-caption">Fig 1 · Damped Oscillation — Displacement x(t) with equilibrium at 0.20 m</div>
+        </div>
+        <!-- VELOCITY GRAPH -->
+        <div class="graph-block">
+          <img src="" alt="Velocity vs Time">
+          <div class="graph-caption">Fig 2 · Velocity v(t) — peaks at steepest displacement changes, decays to zero</div>
+        </div>
+        <!-- MASS VARIATION -->
+        <div class="graph-block">
+          <img src="" alt="Effect of Mass on Damped Oscillation">
+          <div class="graph-caption">Fig 3 · Effect of Mass Variation (5, 10, 20, 30 kg) on oscillation profile</div>
+        </div>
+      </div>
+
+      <div class="key-findings">
+        <div class="finding" data-icon="📍">
+          <div class="finding-tag">System Dynamics · Fig 1 &amp; 2</div>
+          <h4>Equilibrium Convergence</h4>
+          <p>The robotic arm starts at 0.10 m and settles at equilibrium of 0.20 m. Velocity peaks at the steepest displacement changes and reaches zero at each oscillation peak, confirming energy loss through damping.</p>
+        </div>
+        <div class="finding" data-icon="⬆">
+          <div class="finding-tag">Mass Impact · Higher Mass</div>
+          <h4>Increased Inertia</h4>
+          <p>Higher mass (m) leads to increased inertia, causing larger overshoots and a much slower settling time — the natural frequency drops as mass increases.</p>
+        </div>
+        <div class="finding" data-icon="⬇">
+          <div class="finding-tag">Mass Impact · Lower Mass</div>
+          <h4>Faster Settling</h4>
+          <p>Lower mass results in a faster, more stable response with minimal oscillation — reaching the target position quickly (under 5 seconds) with the least vibration.</p>
+        </div>
+        <div class="finding" data-icon="✓">
+          <div class="finding-tag">Conclusion</div>
+          <h4>Optimal Robotic Performance</h4>
+          <p>For optimal robotic performance, a lower mass is ideal as it reaches the target position quickly with the least amount of vibration.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mass Comparison -->
+  <div class="mass-section reveal">
+    <div class="section-tag">Mass Study</div>
+    <h2>Effect of <em>Mass Variation</em></h2>
+    <p class="sub-desc">Varying m from 5 to 30 kg while keeping k, c, F constant</p>
+
+    <div class="mass-grid">
+      <div class="mass-cards">
+        <div class="mass-card">
+          <div class="mass-num">5<span> kg</span></div>
+          <div class="mass-desc">Fastest settling. <strong>Minimal overshoot.</strong> Reaches equilibrium in under 5 s with negligible oscillation.</div>
+        </div>
+        <div class="mass-card">
+          <div class="mass-num">10<span> kg</span></div>
+          <div class="mass-desc">Baseline case. <strong>Moderate damped oscillations</strong> with a settling time of approximately 10–12 s.</div>
+        </div>
+        <div class="mass-card">
+          <div class="mass-num">20<span> kg</span></div>
+          <div class="mass-desc">Noticeably <strong>lower oscillation frequency.</strong> Larger overshoots. Takes around 15 s to settle.</div>
+        </div>
+        <div class="mass-card">
+          <div class="mass-num">30<span> kg</span></div>
+          <div class="mass-desc">Slowest response. <strong>Largest inertia.</strong> Still oscillating significantly at t = 17.5 s in the simulation.</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="padding:2.5rem;background:var(--blue-dark);border-left:4px solid var(--gold);">
+          <div style="font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;">Natural Frequency Formula</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-style:italic;color:#f0ebe0;">ωₙ = √(k/m)</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:rgba(240,235,224,0.6);margin-top:1rem;line-height:1.7;">As mass increases, ωₙ decreases, meaning the system oscillates more slowly. The settling time grows because the damping ratio ζ = c / (2√(km)) also changes.</div>
+          <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid rgba(200,191,168,0.15);">
+            <div style="font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem;">For baseline m = 10 kg</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-style:italic;color:#f0ebe0;">ωₙ = √(50/10) ≈ 2.24 rad/s</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conclusion -->
+  <div class="conclusion-band reveal">
+    <div class="c-label">Conclusion</div>
+    <h3>RK4 Successfully Models Damped Oscillation</h3>
+    <p>The spring-mass-damper system was modelled as a second-order ODE and solved numerically using RK4. The simulation accurately captured the underdamped oscillation of the robotic arm, confirming analytical predictions. The mass variation study showed clearly that lower mass systems settle faster — a key design insight for precision robotic applications where rapid, stable motion is essential.</p>
+  </div>
+
+  <div class="page-nav">
+    <a href="lab_1.html" class="nav-arrow">
+      <div class="nav-arrow-icon">←</div>
+      <div>
+        <div class="nav-arrow-label">Previous Lab</div>
+        <div class="nav-arrow-title">Lab 1 — Newton's Cooling</div>
+      </div>
+    </a>
+    <a href="lab_3.html" class="nav-arrow right">
+      <div>
+        <div class="nav-arrow-label">Next Lab</div>
+        <div class="nav-arrow-title">Lab 3 — Gradient Navigation</div>
+      </div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <p>K.L.E Technological University · 25EMAB102</p>
+  <span class="footer-eq">m(d²x/dt²) + c(dx/dt) + kx = F</span>
+  <p>Guide: Dr. Narayan Swamy</p>
+</footer>
+
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

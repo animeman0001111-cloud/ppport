@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introduction to Differential Equations — D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --rust: #8b3a0f;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --sage: #4a5a4a;
+    --blue-dark: #1c2b3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+  }
+
+  /* Noise texture overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 200;
+    padding: 1.2rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    background: rgba(245,240,232,0.92);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  /* Hero Banner */
+  .hero-banner {
+    margin-top: 64px;
+    background: var(--blue-dark);
+    padding: 6rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-banner::before {
+    content: 'dy/dx';
+    position: absolute;
+    right: -2rem;
+    bottom: -1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.62rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.15s ease forwards;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.8rem, 7vw, 6rem);
+    font-weight: 300;
+    line-height: 1.05;
+    color: #f0ebe0;
+    max-width: 700px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s ease forwards;
+  }
+
+  .hero-title em {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .hero-formula {
+    display: inline-block;
+    margin-top: 2.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-style: italic;
+    color: rgba(240,235,224,0.6);
+    border-left: 3px solid var(--gold);
+    padding-left: 1.2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.5s ease forwards;
+  }
+
+  /* Main content */
+  .content-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5rem 3rem;
+  }
+
+  /* Two-col intro */
+  .intro-block {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 4rem;
+    align-items: start;
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .intro-aside {
+    position: sticky;
+    top: 90px;
+  }
+
+  .section-tag {
+    font-size: 0.58rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .aside-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 300;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  .aside-heading em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .aside-line {
+    width: 40px;
+    height: 2px;
+    background: var(--gold);
+    margin: 1.5rem 0;
+  }
+
+  .aside-note {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .intro-body p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    line-height: 1.85;
+    color: #2a2520;
+    margin-bottom: 1.5rem;
+  }
+
+  .lead-p {
+    font-size: 1.5rem !important;
+    font-weight: 300;
+  }
+
+  /* Formula card */
+  .formula-card {
+    background: var(--blue-dark);
+    color: #f0ebe0;
+    padding: 2rem 2.5rem;
+    margin: 2.5rem 0;
+    border-left: 4px solid var(--gold);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .formula-card::before {
+    content: '∫';
+    position: absolute;
+    right: 1rem;
+    top: -0.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 8rem;
+    color: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+
+  .formula-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .formula-eq {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-style: italic;
+  }
+
+  .formula-vars {
+    margin-top: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .var-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .var-sym {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .var-desc {
+    font-size: 0.68rem;
+    color: rgba(240,235,224,0.6);
+    letter-spacing: 0.05em;
+  }
+
+  /* Types of DEs */
+  .types-section {
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .types-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+
+  .types-section h2 em { color: var(--gold); font-style: italic; }
+
+  .sub-desc {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 2.5rem;
+  }
+
+  .type-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .type-card {
+    border: 1px solid var(--line);
+    padding: 2rem;
+    position: relative;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .type-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-3px);
+  }
+
+  .type-card-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.8rem;
+  }
+
+  .type-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 1rem;
+  }
+
+  .type-card .ex {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-style: italic;
+    color: var(--muted);
+    padding: 0.8rem 1.2rem;
+    background: var(--cream);
+    border-left: 2px solid var(--gold);
+  }
+
+  /* Applications grid */
+  .apps-section {
+    margin-bottom: 5rem;
+  }
+
+  .apps-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+    color: var(--ink);
+  }
+
+  .apps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  .app-cell {
+    background: var(--cream);
+    padding: 1.8rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: background 0.3s;
+    cursor: default;
+  }
+
+  .app-cell:hover { background: var(--paper); }
+
+  .app-icon {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .app-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  /* Quote block */
+  .quote-block {
+    padding: 4rem 3rem;
+    text-align: center;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin: 5rem 0;
+  }
+
+  .quote-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink);
+    line-height: 1.5;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .quote-text strong {
+    font-weight: 600;
+    color: var(--gold);
+    font-style: normal;
+  }
+
+  /* Importance section */
+  .importance-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .imp-col h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 2rem;
+  }
+
+  .imp-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .imp-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--ink);
+    line-height: 1.5;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--line);
+    transition: padding-left 0.3s;
+  }
+
+  .imp-list li:hover { padding-left: 0.5rem; }
+
+  .imp-list li::before {
+    content: '▸';
+    color: var(--gold);
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  /* Robotics card */
+  .robotics-card {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .robotics-card::before {
+    content: '⚙';
+    position: absolute;
+    right: -1rem;
+    bottom: -1rem;
+    font-size: 12rem;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+  }
+
+  .robotics-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    color: var(--gold);
+  }
+
+  .robotics-card .sub-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.4);
+    margin-bottom: 1.5rem;
+  }
+
+  .robotics-card p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: rgba(245,240,232,0.8);
+    margin-bottom: 1.5rem;
+  }
+
+  .robot-apps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+
+  .robot-tag {
+    padding: 0.4rem 1rem;
+    border: 1px solid rgba(184,134,11,0.4);
+    color: rgba(184,134,11,0.9);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: all 0.3s;
+  }
+
+  .robot-tag:hover {
+    background: var(--gold);
+    color: var(--ink);
+    border-color: var(--gold);
+  }
+
+  /* AI/Simulation */
+  .ai-section {
+    margin-bottom: 5rem;
+  }
+
+  .ai-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+
+  .ai-section .sub-desc {
+    margin-bottom: 2.5rem;
+  }
+
+  .ai-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .ai-card {
+    border: 1px solid var(--line);
+    padding: 1.8rem;
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  .ai-card:hover {
+    border-color: var(--gold);
+    background: var(--cream);
+  }
+
+  .ai-card-num {
+    font-size: 2.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    color: rgba(184,134,11,0.25);
+    line-height: 1;
+    margin-bottom: 0.8rem;
+  }
+
+  .ai-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+
+  .ai-card-body {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Nav arrow */
+  .page-nav {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .nav-arrow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--ink);
+    transition: gap 0.3s;
+  }
+
+  .nav-arrow:hover { gap: 1.5rem; }
+
+  .nav-arrow-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .nav-arrow-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    color: var(--ink);
+  }
+
+  .nav-arrow-icon {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--gold);
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .nav-arrow:hover .nav-arrow-icon {
+    background: var(--gold);
+    color: var(--paper);
+    border-color: var(--gold);
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(25px);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    .intro-block, .type-cards, .importance-section, .ai-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .apps-grid { grid-template-columns: repeat(2, 1fr); }
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html" class="active">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+     <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+    <li><a href="Functions-of-several-variables.html">Functions</a></li>
+    <li><a href="srob.html">Robotics</a></li>
+   </ul>
+</nav>
+
+
+<header class="hero-banner">
+  <p class="hero-eyebrow">Chapter 01 · Foundation</p>
+  <h1 class="hero-title">Introduction to<br><em>Differential</em> Equations</h1>
+  <div class="hero-formula">dy/dx = f(x, y)</div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Intro block -->
+  <div class="intro-block reveal">
+    <div class="intro-aside">
+      <p class="section-tag">What is a D.E?</p>
+      <h2 class="aside-heading">The <em>language</em> of change</h2>
+      <div class="aside-line"></div>
+      <p class="aside-note">Differential equations connect a function with its rate of change — describing how quantities evolve continuously in the real world.</p>
+    </div>
+    <div class="intro-body">
+      <p class="lead-p">A differential equation is a mathematical equation involving derivatives of a function, used to describe how quantities change with respect to time, distance, temperature, or other variables.</p>
+      <p>They are foundational to engineering, physics, biology, and economics — essentially any field where systems change continuously rather than in discrete steps.</p>
+
+      <div class="formula-card">
+        <div class="formula-label">General Form</div>
+        <div class="formula-eq">dy/dx = f(x, y)</div>
+        <div class="formula-vars">
+          <div class="var-item"><span class="var-sym">y</span><span class="var-desc">= dependent variable</span></div>
+          <div class="var-item"><span class="var-sym">x</span><span class="var-desc">= independent variable</span></div>
+          <div class="var-item"><span class="var-sym">dy/dx</span><span class="var-desc">= rate of change of y with respect to x</span></div>
+        </div>
+      </div>
+
+      <p>Unlike algebraic equations that give a specific number as a solution, differential equations describe entire families of functions that satisfy a given relationship between a quantity and its rate of change.</p>
+    </div>
+  </div>
+
+  <!-- Types -->
+  <div class="types-section reveal">
+    <div class="section-tag">Classification</div>
+    <h2>Types of <em>Differential</em> Equations</h2>
+    <p class="sub-desc">Two fundamental categories based on the number of independent variables</p>
+
+    <div class="type-cards">
+      <div class="type-card">
+        <div class="type-card-label">Type 01 · Single Variable</div>
+        <h3>Ordinary Differential Equations (ODE)</h3>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--muted);line-height:1.7;margin-bottom:1rem;">Involve derivatives with respect to a single independent variable. Used for systems that evolve over time.</p>
+        <div class="ex">dy/dx + y = 0</div>
+      </div>
+      <div class="type-card">
+        <div class="type-card-label">Type 02 · Multiple Variables</div>
+        <h3>Partial Differential Equations (PDE)</h3>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--muted);line-height:1.7;margin-bottom:1rem;">Involve partial derivatives with respect to multiple independent variables. Used in heat transfer, wave propagation, and fluid dynamics.</p>
+        <div class="ex">∂u/∂t = k ∂²u/∂x²</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Applications -->
+  <div class="apps-section reveal">
+    <div class="section-tag">Where They're Used</div>
+    <h2>Fields of <em>Application</em></h2>
+    <div class="apps-grid">
+      <div class="app-cell"><div class="app-icon">⚙</div><div class="app-name">Engineering</div></div>
+      <div class="app-cell"><div class="app-icon">🤖</div><div class="app-name">Robotics</div></div>
+      <div class="app-cell"><div class="app-icon">⚡</div><div class="app-name">Electrical Circuits</div></div>
+      <div class="app-cell"><div class="app-icon">💧</div><div class="app-name">Fluid Mechanics</div></div>
+      <div class="app-cell"><div class="app-icon">🌱</div><div class="app-name">Population Growth</div></div>
+      <div class="app-cell"><div class="app-icon">🌡</div><div class="app-name">Heat Transfer</div></div>
+      <div class="app-cell"><div class="app-icon">📈</div><div class="app-name">Economics</div></div>
+      <div class="app-cell"><div class="app-icon">🧠</div><div class="app-name">Artificial Intelligence</div></div>
+    </div>
+  </div>
+
+  <!-- Quote -->
+  <div class="quote-block reveal">
+    <p class="quote-text">Differential equations are called the <strong>"language of change"</strong> in science and engineering — because they mathematically represent how things change continuously in the real world.</p>
+  </div>
+
+  <!-- Importance / Robotics -->
+  <div class="importance-section reveal">
+    <div class="imp-col">
+      <div class="section-tag">Engineering Value</div>
+      <h2>Why They <em>Matter</em></h2>
+      <ul class="imp-list">
+        <li>Predict system behavior before construction</li>
+        <li>Design safer machines and structures</li>
+        <li>Analyze electrical systems and circuits</li>
+        <li>Model robot motion and joint dynamics</li>
+        <li>Control dynamic systems in real time</li>
+        <li>Forecast future states from present conditions</li>
+      </ul>
+    </div>
+    <div class="imp-col">
+      <div class="robotics-card">
+        <h3>Robotics &amp; Automation</h3>
+        <div class="sub-label">Critical applications in A&amp;R Engineering</div>
+        <p>In robotics and automation, differential equations govern every aspect of movement — from joint angles and velocity to acceleration and applied forces. Without them, robots could not move smoothly or accurately.</p>
+        <p>When a robotic arm picks an object, D.E.s calculate the exact trajectory, speed, and force required at each moment.</p>
+        <div class="robot-apps">
+          <span class="robot-tag">Robot Arm Control</span>
+          <span class="robot-tag">Drone Stabilization</span>
+          <span class="robot-tag">Self-Balancing Robots</span>
+          <span class="robot-tag">Path Planning</span>
+          <span class="robot-tag">Industrial Automation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI / Simulations -->
+  <div class="ai-section reveal">
+    <div class="section-tag">Modern Technology</div>
+    <h2>Simulations &amp; <em>AI Systems</em></h2>
+    <p class="sub-desc">How differential equations power cutting-edge intelligent systems</p>
+
+    <div class="ai-grid">
+      <div class="ai-card">
+        <div class="ai-card-num">01</div>
+        <div class="ai-card-title">Self-Driving Cars</div>
+        <div class="ai-card-body">Motion planning, sensor fusion, and real-time trajectory corrections all depend on differential models of vehicle dynamics.</div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-num">02</div>
+        <div class="ai-card-title">AI Optimization</div>
+        <div class="ai-card-body">Gradient descent — the backbone of neural network training — directly uses derivatives to minimize loss functions and improve accuracy.</div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-num">03</div>
+        <div class="ai-card-title">Physics Simulations</div>
+        <div class="ai-card-body">From video game engines to flight simulators, differential equations recreate real-world physics digitally with high fidelity.</div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-num">04</div>
+        <div class="ai-card-title">Weather Forecasting</div>
+        <div class="ai-card-body">Atmospheric models use systems of PDEs to predict temperature, pressure, and wind patterns across the globe.</div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-num">05</div>
+        <div class="ai-card-title">Disease Modeling</div>
+        <div class="ai-card-body">Epidemiological models (SIR models) use ODEs to predict how diseases spread through populations over time.</div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-num">06</div>
+        <div class="ai-card-title">Neural Networks</div>
+        <div class="ai-card-body">Neural ODEs represent a class of deep learning models where the network dynamics are governed by differential equations.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page nav -->
+  <div class="page-nav">
+    <a href="de-first-order.html" class="nav-arrow">
+      <div style="text-align:right">
+        <div class="nav-arrow-label">Next Chapter</div>
+        <div class="nav-arrow-title">First Order System Dynamics</div>
+      </div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+
+</div><!-- end content-wrap -->
+
+<footer>
+  <p>K.L.E Technological University · 25EMAB102</p>
+  <span class="footer-eq">dy/dx + P(x)y = Q(x)</span>
+  <p>Guide: Dr. Narayan Swamy</p>
+</footer>
+
+<script>
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

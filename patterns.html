@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patterns and Formulas — D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d; --paper: #f5f0e8; --cream: #ede8db;
+    --gold: #b8860b; --rust: #8b3a0f; --muted: #6b6354;
+    --line: #c8bfa8; --dark: #1a1510; --forest: #1e2b1e; --warm-red: #7a1f0f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--paper); color: var(--ink); font-family: 'JetBrains Mono', monospace; min-height: 100vh; }
+
+  .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--gold); z-index: 300; transition: width 0.1s; width: 0%; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; padding: 1.2rem 2.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); background: rgba(245,240,232,0.92); backdrop-filter: blur(12px); }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  .hero-banner { margin-top: 64px; background: var(--forest); padding: 6rem 3rem; position: relative; overflow: hidden; }
+  .hero-banner::before { content: '∫'; position: absolute; right: 5%; bottom: -2rem; font-family: 'Cormorant Garamond', serif; font-size: 20rem; font-weight: 300; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; }
+  .hero-banner::after { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; }
+  .hero-inner { position: relative; z-index: 1; }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 7vw, 6rem); font-weight: 300; line-height: 1.05; color: #f0ebe0; max-width: 700px; opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards; }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-formula { display: inline-block; margin-top: 2.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.6); border-left: 3px solid var(--gold); padding-left: 1.2rem; opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards; }
+
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .block-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .block-section > h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: var(--ink); margin-bottom: 0.4rem; }
+  .sub-desc { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  /* Two-col layout */
+  .two-col { display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; align-items: start; }
+
+  /* Definition box */
+  .def-box { background: var(--forest); color: #f0ebe0; padding: 2.5rem; border-left: 4px solid var(--gold); }
+  .def-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .def-eq { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-style: italic; margin-bottom: 1.5rem; line-height: 1.3; }
+  .def-note { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: rgba(240,235,224,0.6); line-height: 1.6; }
+
+  /* Solved example */
+  .solved-card { border: 1px solid var(--line); overflow: hidden; }
+  .solved-header { background: var(--ink); padding: 1rem 1.8rem; display: flex; justify-content: space-between; align-items: center; }
+  .solved-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; color: #f0ebe0; }
+  .solved-tag { font-size: 0.6rem; letter-spacing: 0.15em; color: var(--gold); }
+
+  .solved-steps { padding: 0; }
+  .step-row { display: grid; grid-template-columns: 80px 1fr; gap: 0; border-bottom: 1px solid var(--line); }
+  .step-row:last-child { border-bottom: none; }
+  .step-label { background: var(--cream); padding: 1.2rem 1rem; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); border-right: 1px solid var(--line); display: flex; align-items: center; justify-content: center; text-align: center; }
+  .step-content { padding: 1.2rem 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; line-height: 1.8; color: var(--ink); }
+  .step-content .c { color: var(--gold); }
+  .step-content .v { color: var(--rust); }
+
+  /* Answer badge */
+  .answer-row { display: flex; align-items: center; gap: 0.75rem; padding: 1.2rem 1.5rem; background: rgba(184,134,11,0.05); border-top: 1px solid var(--line); }
+  .answer-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--forest); color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; padding: 0.5rem 1.2rem; letter-spacing: 0.05em; }
+  .answer-badge::before { content: '✓'; color: #8fd9c4; }
+
+  /* Graph interpretation */
+  .interp-list { list-style: none; display: flex; flex-direction: column; gap: 0; margin-top: 1.5rem; }
+  .interp-list li { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); line-height: 1.5; }
+  .interp-list li:last-child { border-bottom: none; }
+  .interp-list li::before { content: '—'; color: var(--gold); flex-shrink: 0; }
+
+  /* Applications grid */
+  .app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 1.5rem; }
+  .app-cell { background: var(--cream); padding: 1.2rem 1.5rem; transition: background 0.3s; cursor: default; }
+  .app-cell:hover { background: var(--paper); }
+  .app-cell .app-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .app-cell .app-name { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--ink); }
+
+  /* IF box */
+  .if-box { background: rgba(139,58,15,0.06); border: 1px solid rgba(139,58,15,0.2); padding: 2rem; margin: 1.5rem 0; }
+  .if-box .if-title { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rust); margin-bottom: 0.75rem; }
+  .if-box .if-eq { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: var(--ink); }
+  .if-box .if-why { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: var(--muted); margin-top: 0.75rem; line-height: 1.6; }
+
+  /* Comparison table */
+  .compare-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+  .compare-table thead tr { background: var(--ink); }
+  .compare-table th { padding: 1rem 1.5rem; text-align: left; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--paper); font-weight: 400; }
+  .compare-table td { padding: 0.9rem 1.5rem; border-bottom: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--muted); }
+  .compare-table tr:hover td { background: var(--cream); }
+  .compare-table td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink); }
+  .compare-table td.good { color: var(--forest); font-weight: 600; }
+  .compare-table td.better { color: var(--rust); }
+
+  .conclusion-block { background: var(--forest); padding: 3rem; border-left: 4px solid var(--gold); }
+  .conclusion-block h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--gold); margin-bottom: 1.5rem; }
+  .conclusion-block p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; line-height: 1.8; color: rgba(240,235,224,0.75); }
+
+  .page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--line); }
+  .nav-arrow { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--ink); transition: gap 0.3s; }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+    .two-col { grid-template-columns: 1fr; gap: 2rem; }
+    .app-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html" class="active">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+     <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+    <li><a href="Functions-of-several-variables.html">Functions</a></li>
+    <li><a href="srob.html">Robotics</a></li>
+   </ul>
+</nav>
+
+
+
+<header class="hero-banner">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Chapter 02 · Analytical Methods</p>
+    <h1 class="hero-title">Patterns &amp;<br><em>Formulas</em></h1>
+    <div class="hero-formula">dy/dx + Py = Q</div>
+  </div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Separable DEs -->
+  <div class="block-section reveal">
+    <div class="section-tag">Type 01</div>
+    <h2>Separable Differential <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Equations</em></h2>
+    <p class="sub-desc">Variables can be separated and integrated independently</p>
+
+    <div class="two-col">
+      <div>
+        <div class="def-box">
+          <div class="def-label">Definition</div>
+          <div class="def-eq">dy/dx = g(x) h(y)</div>
+          <div class="def-note">Separate variables and integrate both sides independently:</div>
+          <div class="def-eq" style="font-size:1.4rem;margin-top:1rem;">dy / h(y) = g(x) dx</div>
+        </div>
+
+        <ul class="interp-list">
+          <li>The curve rises slowly at first</li>
+          <li>Growth becomes faster as x increases</li>
+          <li>The rate of change continuously increases</li>
+          <li>The solution remains smooth and continuous</li>
+        </ul>
+
+        <div class="app-grid" style="margin-top:2rem;">
+          <div class="app-cell"><div class="app-icon">🌱</div><div class="app-name">Population Growth</div></div>
+          <div class="app-cell"><div class="app-icon">☢️</div><div class="app-name">Radioactive Decay</div></div>
+          <div class="app-cell"><div class="app-icon">🌡️</div><div class="app-name">Newton's Cooling</div></div>
+          <div class="app-cell"><div class="app-icon">⚗️</div><div class="app-name">Chemical Reactions</div></div>
+          <div class="app-cell"><div class="app-icon">🧬</div><div class="app-name">Biological Growth</div></div>
+          <div class="app-cell"><div class="app-icon">📈</div><div class="app-name">Exponential Models</div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="solved-card">
+          <div class="solved-header">
+            <h3>Solved Example</h3>
+            <span class="solved-tag">Separable · dy/dx = xy</span>
+          </div>
+          <div class="solved-steps">
+            <div class="step-row">
+              <div class="step-label">Given</div>
+              <div class="step-content"><span class="c">// Problem</span><br>dy/dx = xy<br><span class="c">// Separate variables</span></div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Step 1</div>
+              <div class="step-content">dy/y = x dx</div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Step 2</div>
+              <div class="step-content"><span class="c">// Integrate both sides</span><br>∫(1/y) dy = ∫x dx<br>ln y = x²/2 + C</div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Step 3</div>
+              <div class="step-content"><span class="c">// Take exponential</span><br>y = e^(x²/2 + C)<br>y = <span class="v">Ce^(x²/2)</span></div>
+            </div>
+          </div>
+          <div class="answer-row">
+            <div class="answer-badge">y = Ce^(x²/2)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Linear DEs -->
+  <div class="block-section reveal">
+    <div class="section-tag">Type 02</div>
+    <h2>Linear Differential <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Equations</em></h2>
+    <p class="sub-desc">Solved with the integrating factor method</p>
+
+    <div class="two-col">
+      <div>
+        <div class="def-box">
+          <div class="def-label">General Form</div>
+          <div class="def-eq">dy/dx + P·y = Q</div>
+          <div class="def-note">where P and Q are constants or functions of x. The integrating factor converts it into an exact derivative.</div>
+        </div>
+
+        <div class="if-box">
+          <div class="if-title">Integrating Factor</div>
+          <div class="if-eq">IF = e^(∫P dx)</div>
+          <div class="if-why">Multiplying by the integrating factor transforms dy/dx + Py = Q into d/dx(y · IF) — which integrates directly.</div>
+        </div>
+
+        <ul class="interp-list">
+          <li>e^(−x) term decreases with increasing x</li>
+          <li>e^x term grows rapidly with increasing x</li>
+          <li>Solution eventually behaves like e^x/2</li>
+          <li>All solution curves approach y = e^x/2 as x → ∞</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="solved-card">
+          <div class="solved-header">
+            <h3>Solved Example</h3>
+            <span class="solved-tag">Linear · dy/dx + y = eˣ</span>
+          </div>
+          <div class="solved-steps">
+            <div class="step-row">
+              <div class="step-label">Given</div>
+              <div class="step-content"><span class="c">// P = 1, Q = eˣ</span><br>dy/dx + y = e^x</div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Step 1</div>
+              <div class="step-content"><span class="c">// Integrating factor</span><br>IF = e^(∫1 dx) = <span class="v">eˣ</span></div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Step 2</div>
+              <div class="step-content"><span class="c">// Multiply by IF</span><br>eˣ(dy/dx) + eˣy = e^(2x)<br>d/dx(y·eˣ) = e^(2x)</div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Step 3</div>
+              <div class="step-content"><span class="c">// Integrate both sides</span><br>y·eˣ = e^(2x)/2 + C</div>
+            </div>
+            <div class="step-row">
+              <div class="step-label">Step 4</div>
+              <div class="step-content"><span class="c">// Divide by eˣ</span><br>y = <span class="v">eˣ/2 + Ce^(−x)</span></div>
+            </div>
+          </div>
+          <div class="answer-row">
+            <div class="answer-badge">y = eˣ/2 + Ce^(−x)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison -->
+  <div class="block-section reveal">
+    <div class="section-tag">Comparison</div>
+    <h2>Analytical vs <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Numerical</em> Methods</h2>
+    <p class="sub-desc">Choosing the right approach for the problem at hand</p>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Analytical Methods</th>
+          <th>Numerical Methods</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Solution type</td>
+          <td class="good">Exact</td>
+          <td>Approximate</td>
+        </tr>
+        <tr>
+          <td>Method used</td>
+          <td>Integration</td>
+          <td>Iterative calculations</td>
+        </tr>
+        <tr>
+          <td>Accuracy</td>
+          <td class="good">More accurate</td>
+          <td>Depends on step size</td>
+        </tr>
+        <tr>
+          <td>Best suited for</td>
+          <td>Simpler equations</td>
+          <td class="better">Complex equations</td>
+        </tr>
+        <tr>
+          <td>Output form</td>
+          <td class="good">Closed-form answer</td>
+          <td>Numerical values</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Conclusion -->
+  <div class="reveal">
+    <div class="conclusion-block">
+      <h2>Conclusion</h2>
+      <p>Analytical methods provide exact mathematical solutions and are preferred for simpler equations. Numerical methods provide approximate solutions when analytical methods become difficult or impossible to apply. Among numerical techniques, RK4 gives results that are extremely close to the exact analytical solution.</p>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <a href="#" class="nav-arrow" style="flex-direction:row-reverse;">
+      <div style="text-align:left">
+        <div class="nav-arrow-label">Previous</div>
+        <div class="nav-arrow-title">Introduction to D.E.</div>
+      </div>
+      <div class="nav-arrow-icon" style="transform:scaleX(-1);">→</div>
+    </a>
+    <a href="numerical-methods.html" class="nav-arrow">
+      <div style="text-align:right">
+        <div class="nav-arrow-label">Next Chapter</div>
+        <div class="nav-arrow-title">Numerical Methods</div>
+      </div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+</div>
+
+<footer>
+  <p>K.L.E Technological University · D.E Assignment</p>
+  <span class="footer-eq">dy/dx + Py = Q</span>
+  <p>Patterns &amp; Formulas</p>
+</footer>
+
+<script>
+  window.addEventListener('scroll', () => {
+    const scrollTop = document.documentElement.scrollTop;
+    const docH = document.documentElement.scrollHeight - window.innerHeight;
+    document.getElementById('progressBar').style.width = (scrollTop / docH * 100) + '%';
+  });
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.06 });
+  reveals.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

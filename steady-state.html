@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steady State Response, Frequency Response &amp; Resonance — D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --rust: #8b3a0f;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --sage: #4a5a4a;
+    --blue-dark: #1c2b3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 200;
+    padding: 1.2rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    background: rgba(245,240,232,0.92);
+    backdrop-filter: blur(12px);
+  }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  .hero-banner {
+    margin-top: 64px;
+    background: var(--blue-dark);
+    padding: 6rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-banner::before {
+    content: 'ω = ωₙ';
+    position: absolute;
+    right: -2rem;
+    bottom: -1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 7vw, 6rem); font-weight: 300; line-height: 1.05; color: #f0ebe0; max-width: 800px; opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards; }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-formula { display: inline-block; margin-top: 2.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.6); border-left: 3px solid var(--gold); padding-left: 1.2rem; opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards; }
+
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+
+  .intro-block { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; align-items: start; margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .intro-aside { position: sticky; top: 90px; }
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .aside-heading { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; line-height: 1.2; color: var(--ink); }
+  .aside-heading em { font-style: italic; color: var(--gold); }
+  .aside-line { width: 40px; height: 2px; background: var(--gold); margin: 1.5rem 0; }
+  .aside-note { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-style: italic; color: var(--muted); line-height: 1.7; }
+  .intro-body p { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; line-height: 1.85; color: #2a2520; margin-bottom: 1.5rem; }
+  .lead-p { font-size: 1.5rem !important; font-weight: 300; }
+
+  .formula-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; margin: 2.5rem 0; border-left: 4px solid var(--gold); position: relative; overflow: hidden; }
+  .formula-card::before { content: '∫'; position: absolute; right: 1rem; top: -0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 8rem; color: rgba(255,255,255,0.04); pointer-events: none; }
+  .formula-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .formula-eq { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-style: italic; }
+  .formula-vars { margin-top: 1.2rem; display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  .var-item { display: flex; align-items: baseline; gap: 0.5rem; }
+  .var-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; color: var(--gold); }
+  .var-desc { font-size: 0.68rem; color: rgba(240,235,224,0.6); letter-spacing: 0.05em; }
+
+  /* Method section */
+  .method-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .method-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .method-section h2 em { color: var(--gold); font-style: italic; }
+  .sub-desc { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+  .method-steps { counter-reset: step; list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .method-steps li { counter-increment: step; display: flex; align-items: flex-start; gap: 1.2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); padding: 1rem 0; border-bottom: 1px solid var(--line); }
+  .method-steps li::before { content: counter(step, decimal-leading-zero); font-size: 0.65rem; color: var(--gold); letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; margin-top: 0.25rem; flex-shrink: 0; width: 2rem; }
+
+  .solved-card { background: var(--blue-dark); color: #f0ebe0; padding: 2rem 2.5rem; border-left: 4px solid var(--gold); }
+  .solved-card .solve-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; }
+  .solved-card .step-row { margin-bottom: 1.2rem; padding-bottom: 1.2rem; border-bottom: 1px solid rgba(200,191,168,0.15); }
+  .solved-card .step-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .solved-card .step-title { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,235,224,0.4); margin-bottom: 0.5rem; }
+  .solved-card .step-eq { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-style: italic; line-height: 1.5; }
+
+  /* Response section */
+  .response-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .response-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .response-section h2 em { color: var(--gold); font-style: italic; }
+
+  .response-split { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+
+  .response-cards { display: flex; flex-direction: column; gap: 1.5rem; }
+  .resp-card { border: 1px solid var(--line); padding: 2rem; transition: border-color 0.3s, transform 0.3s; }
+  .resp-card:hover { border-color: var(--gold); transform: translateX(4px); }
+  .resp-card-tag { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.8rem; }
+  .resp-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--ink); margin-bottom: 0.8rem; }
+  .resp-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+  .resp-list li { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+  .resp-list li::before { content: '▸'; color: var(--gold); font-size: 0.7rem; }
+
+  .img-block { width: 100%; background: var(--cream); border: 1px solid var(--line); overflow: hidden; }
+  .img-block img { width: 100%; height: auto; display: block; }
+  .img-caption { padding: 1rem 1.5rem; border-top: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--muted); }
+
+  /* Frequency section */
+  .freq-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .freq-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .freq-section h2 em { color: var(--gold); font-style: italic; }
+  .freq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+
+  .freq-info p { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; line-height: 1.8; color: #2a2520; margin-bottom: 1.5rem; }
+
+  .importance-list { list-style: none; display: flex; flex-direction: column; gap: 0; margin-top: 1rem; }
+  .importance-list li { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); display: flex; align-items: flex-start; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--line); transition: padding-left 0.3s; }
+  .importance-list li:hover { padding-left: 0.5rem; }
+  .importance-list li::before { content: '▸'; color: var(--gold); font-size: 0.7rem; margin-top: 0.25rem; flex-shrink: 0; }
+
+  /* Resonance section */
+  .resonance-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .resonance-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .resonance-section h2 em { color: var(--gold); font-style: italic; }
+  .resonance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 2rem; align-items: start; }
+
+  .resonance-dark { background: var(--ink); color: var(--paper); padding: 3rem; position: relative; overflow: hidden; }
+  .resonance-dark::before { content: '⚡'; position: absolute; right: -1rem; bottom: -1rem; font-size: 10rem; color: rgba(255,255,255,0.03); line-height: 1; }
+  .resonance-dark .res-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .resonance-dark h3 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--gold); margin-bottom: 0.5rem; }
+  .resonance-dark .condition { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-style: italic; color: rgba(240,235,224,0.8); margin: 1.5rem 0; padding: 1rem 1.5rem; border-left: 3px solid var(--gold); }
+  .resonance-dark p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; line-height: 1.7; color: rgba(245,240,232,0.8); margin-bottom: 1rem; }
+
+  .effects-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1rem; }
+  .effects-list li { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: rgba(245,240,232,0.7); display: flex; align-items: center; gap: 0.8rem; padding: 0.4rem 0; }
+  .effects-list li::before { content: '▸'; color: var(--gold); font-size: 0.7rem; flex-shrink: 0; }
+
+  .resonance-right { display: flex; flex-direction: column; gap: 1.5rem; }
+  .res-img-block { width: 100%; background: var(--cream); border: 1px solid var(--line); overflow: hidden; }
+  .res-img-block img { width: 100%; height: auto; display: block; }
+  .res-img-block .img-caption { padding: 1rem 1.5rem; border-top: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--muted); }
+
+  /* Real-life examples */
+  .examples-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .examples-section h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .examples-section h2 em { color: var(--gold); font-style: italic; }
+  .examples-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 2rem; }
+  .ex-cell { background: var(--cream); padding: 2rem 1.5rem; transition: background 0.3s; }
+  .ex-cell:hover { background: var(--paper); }
+  .ex-icon { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--gold); line-height: 1; margin-bottom: 0.8rem; }
+  .ex-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--ink); margin-bottom: 0.5rem; }
+  .ex-desc { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--muted); line-height: 1.5; }
+
+  /* Interp block */
+  .interp-block { margin: 5rem 0; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .interp-block h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 2rem; color: var(--ink); }
+  .interp-block h2 em { color: var(--gold); font-style: italic; }
+  .interp-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .interp-card { border: 1px solid var(--line); padding: 2rem; position: relative; overflow: hidden; transition: border-color 0.3s, transform 0.3s; }
+  .interp-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+  .interp-card::before { content: attr(data-num); position: absolute; right: -0.5rem; bottom: -1rem; font-family: 'Cormorant Garamond', serif; font-size: 6rem; font-weight: 300; color: rgba(184,134,11,0.07); pointer-events: none; line-height: 1; }
+  .interp-card-tag { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.8rem; }
+  .interp-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; color: var(--ink); margin-bottom: 0.5rem; }
+  .interp-card p { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--muted); line-height: 1.6; }
+
+  /* Applications final */
+  .apps-final { margin-bottom: 5rem; }
+  .apps-final h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; margin-bottom: 0.5rem; color: var(--ink); }
+  .apps-final h2 em { color: var(--gold); font-style: italic; }
+  .apps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 2rem; }
+  .app-col h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 300; color: var(--ink); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold); }
+  .app-items { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+  .app-items li { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid var(--line); }
+  .app-items li::before { content: '▸'; color: var(--gold); font-size: 0.65rem; flex-shrink: 0; }
+
+  /* Quote */
+  .quote-block { padding: 4rem 3rem; text-align: center; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 5rem 0; }
+  .quote-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 300; font-style: italic; color: var(--ink); line-height: 1.5; max-width: 700px; margin: 0 auto; }
+  .quote-text strong { font-weight: 600; color: var(--gold); font-style: normal; }
+
+  /* Page nav */
+  .page-nav { display: flex; justify-content: flex-end; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--line); }
+  .nav-arrow { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--ink); transition: gap 0.3s; }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .intro-block, .method-grid, .response-split, .freq-grid, .resonance-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .examples-grid, .apps-grid { grid-template-columns: repeat(2, 1fr); }
+    .interp-cards { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html" class="active">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+     <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+    <li><a href="Functions-of-several-variables.html">Functions</a></li>
+    <li><a href="srob.html">Robotics</a></li>
+   </ul>
+</nav>
+<header class="hero-banner">
+  <p class="hero-eyebrow">Chapter 06 · Dynamic Systems</p>
+  <h1 class="hero-title">Steady State Response,<br><em>Frequency</em> Response<br>&amp; Resonance</h1>
+  <div class="hero-formula">a(d²y/dx²) + b(dy/dx) + cy = f(x)</div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Intro -->
+  <div class="intro-block reveal">
+    <div class="intro-aside">
+      <p class="section-tag">Chapter Overview</p>
+      <h2 class="aside-heading">How systems <em>respond</em> to inputs</h2>
+      <div class="aside-line"></div>
+      <p class="aside-note">Second-order differential equations describe the dynamic behavior of mechanical, electrical, and control systems when subjected to external forces and oscillations.</p>
+    </div>
+    <div class="intro-body">
+      <p class="lead-p">Second-order differential equations are widely used to study mechanical, electrical, and control systems. These equations help engineers analyze how a system behaves when subjected to external forces or inputs.</p>
+
+      <div class="formula-card">
+        <div class="formula-label">General Form</div>
+        <div class="formula-eq">a(d²y/dx²) + b(dy/dx) + cy = f(x)</div>
+        <div class="formula-vars">
+          <div class="var-item"><span class="var-sym">a, b, c</span><span class="var-desc">= constants</span></div>
+          <div class="var-item"><span class="var-sym">y</span><span class="var-desc">= dependent variable</span></div>
+          <div class="var-item"><span class="var-sym">f(x)</span><span class="var-desc">= forcing function</span></div>
+        </div>
+      </div>
+
+      <p>The behaviour of such systems changes dramatically depending on whether the forcing function is zero (homogeneous) or non-zero (non-homogeneous). Understanding this distinction is key to predicting and controlling system dynamics.</p>
+    </div>
+  </div>
+
+  <!-- Method of Undetermined Coefficients -->
+  <div class="method-section reveal">
+    <div class="section-tag">Solution Technique</div>
+    <h2>Method of <em>Undetermined</em> Coefficients</h2>
+    <p class="sub-desc">Finding the particular solution of non-homogeneous differential equations</p>
+
+    <div class="method-grid">
+      <div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;line-height:1.8;color:#2a2520;margin-bottom:2rem;">The method assumes a trial solution that mirrors the form of the forcing function. By substituting into the differential equation, the unknown coefficients are determined to satisfy the equation exactly.</p>
+
+        <div class="formula-card" style="margin-bottom:2rem;">
+          <div class="formula-label">Complete Solution</div>
+          <div class="formula-eq">General Solution = CF + PI</div>
+          <div class="formula-vars">
+            <div class="var-item"><span class="var-sym">CF</span><span class="var-desc">= Complementary Function</span></div>
+            <div class="var-item"><span class="var-sym">PI</span><span class="var-desc">= Particular Integral</span></div>
+          </div>
+        </div>
+
+        <ol class="method-steps">
+          <li>Find the complementary function by solving the homogeneous equation</li>
+          <li>Assume a suitable form for the particular solution based on f(x)</li>
+          <li>Substitute the assumed solution into the full equation</li>
+          <li>Determine the unknown constants by comparing coefficients</li>
+          <li>Obtain the complete general solution</li>
+        </ol>
+      </div>
+
+      <div class="solved-card">
+        <div class="solve-label">Solved Example</div>
+
+        <div class="step-row">
+          <div class="step-title">Given Equation</div>
+          <div class="step-eq">d²y/dx² − 3(dy/dx) + 2y = eˣ</div>
+        </div>
+        <div class="step-row">
+          <div class="step-title">Step 1 — Auxiliary Equation</div>
+          <div class="step-eq">m² − 3m + 2 = 0</div>
+          <div class="step-eq" style="font-size:1.1rem;margin-top:0.5rem;">(m−1)(m−2) = 0 → m = 1, 2</div>
+        </div>
+        <div class="step-row">
+          <div class="step-title">Step 2 — Complementary Function</div>
+          <div class="step-eq">CF = C₁eˣ + C₂e²ˣ</div>
+        </div>
+        <div class="step-row">
+          <div class="step-title">Step 3 — Particular Integral</div>
+          <div class="step-eq">Assume PI = Axeˣ</div>
+          <div class="step-eq" style="font-size:1.1rem;margin-top:0.5rem;">Solving gives A = −1</div>
+          <div class="step-eq" style="font-size:1.1rem;margin-top:0.3rem;">PI = −xeˣ</div>
+        </div>
+        <div class="step-row">
+          <div class="step-title">Complete Solution</div>
+          <div class="step-eq">y = C₁eˣ + C₂e²ˣ − xeˣ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Steady State Response -->
+  <div class="response-section reveal">
+    <div class="section-tag">System Behaviour</div>
+    <h2>Steady-State <em>Response</em></h2>
+    <p class="sub-desc">The long-term behaviour after transient effects have decayed to zero</p>
+
+    <div class="response-split">
+      <div class="response-cards">
+        <div class="resp-card">
+          <div class="resp-card-tag">Phase 01 · Early</div>
+          <h3>Transient Response</h3>
+          <ul class="resp-list">
+            <li>Exists for a short duration after input</li>
+            <li>Gradually decays with time</li>
+            <li>Depends on initial conditions</li>
+            <li>Dominated by natural frequencies</li>
+          </ul>
+        </div>
+        <div class="resp-card">
+          <div class="resp-card-tag">Phase 02 · Long-term</div>
+          <h3>Steady-State Response</h3>
+          <ul class="resp-list">
+            <li>Remains after transient response vanishes</li>
+            <li>Depends on the external input</li>
+            <li>Determines long-term system behaviour</li>
+            <li>Matches frequency of forcing function</li>
+          </ul>
+        </div>
+        <div style="padding:1.5rem;background:var(--cream);border-left:3px solid var(--gold);">
+          <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--muted);font-style:italic;line-height:1.7;">Total Response = Transient Response + Steady-State Response</p>
+        </div>
+      </div>
+      <div>
+        <div class="img-block">
+          <img src="PLACE_SYSTEM_RESPONSE_GRAPH_IMAGE_HERE" alt="Graph of system response: amplitude vs time showing transient and steady state">
+          <div class="img-caption">Graph of System Response (Amplitude vs Time) — transient decays, steady state remains</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Frequency Response -->
+  <div class="freq-section reveal">
+    <div class="section-tag">Frequency Analysis</div>
+    <h2>Frequency <em>Response</em></h2>
+    <p class="sub-desc">How a system reacts to inputs at different oscillation frequencies</p>
+
+    <div class="freq-grid">
+      <div class="freq-info">
+        <div class="formula-card">
+          <div class="formula-label">Sinusoidal Input</div>
+          <div class="formula-eq">F(t) = F₀ sin(ωt)</div>
+          <div class="formula-vars">
+            <div class="var-item"><span class="var-sym">ω</span><span class="var-desc">= input frequency</span></div>
+            <div class="var-item"><span class="var-sym">F₀</span><span class="var-desc">= force amplitude</span></div>
+            <div class="var-item"><span class="var-sym">ωₙ</span><span class="var-desc">= natural frequency</span></div>
+          </div>
+        </div>
+
+        <p style="margin-top:1.5rem;">Frequency response describes how a system reacts to different input frequencies. Engineers use it to determine whether a system will amplify, attenuate, or resonate with a given input.</p>
+        <p>The response depends critically on the relationship between the input frequency ω and the natural frequency ωₙ of the system.</p>
+
+        <ul class="importance-list" style="margin-top:1.5rem;">
+          <li>Determine system stability margins</li>
+          <li>Identify resonance conditions</li>
+          <li>Evaluate vibration control performance</li>
+          <li>Design filters and damping mechanisms</li>
+        </ul>
+      </div>
+      <div>
+        <div class="img-block">
+          <img src="PLACE_FREQUENCY_RESPONSE_CURVE_IMAGE_HERE" alt="Frequency response curve: amplitude vs frequency ratio for different damping ratios">
+          <div class="img-caption">Frequency Response Curve (Amplitude vs Frequency) — peak near natural frequency for different damping ratios ζ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resonance -->
+  <div class="resonance-section reveal">
+    <div class="section-tag">Critical Phenomenon</div>
+    <h2>Resonance — When <em>ω = ωₙ</em></h2>
+    <p class="sub-desc">The critical condition where the forcing frequency matches the natural frequency</p>
+
+    <div class="resonance-grid">
+      <div class="resonance-dark">
+        <div class="res-label">Resonance Condition</div>
+        <h3>Maximum Amplitude</h3>
+        <div class="condition">ω = ωₙ = √(k/m)</div>
+        <p>When the forcing frequency equals the natural frequency of the system, energy is continuously transferred into the system's oscillation, causing amplitude to grow — potentially without bound in undamped systems.</p>
+
+        <div class="formula-label" style="margin-top:1.5rem;">Natural Frequency Formula</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-style:italic;color:rgba(240,235,224,0.8);margin-bottom:1.5rem;">ωₙ = √(k/m)</div>
+
+        <div class="formula-label">Effects of Resonance</div>
+        <ul class="effects-list">
+          <li>Large amplitude vibrations</li>
+          <li>Excessive mechanical noise</li>
+          <li>Structural fatigue in components</li>
+          <li>Potential catastrophic failure</li>
+          <li>Damage to surrounding structures</li>
+        </ul>
+      </div>
+
+      <div class="resonance-right">
+        <div class="img-block">
+          <img src="PLACE_RESONANCE_GRAPH_IMAGE_HERE" alt="Resonance graph: amplitude vs frequency for various damping ratios">
+          <div class="img-caption">Resonance Graph (Amplitude vs Frequency) — maximum at ω = ωₙ; undamped case (ζ=0) reaches infinity</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-life examples -->
+  <div class="examples-section reveal">
+    <div class="section-tag">Real-World Impact</div>
+    <h2>Examples of <em>Resonance</em></h2>
+    <p class="sub-desc">Where resonance appears — and why engineers must account for it</p>
+
+    <div class="examples-grid">
+      <div class="ex-cell">
+        <div class="ex-icon">🌉</div>
+        <div class="ex-title">Bridge Vibrations</div>
+        <div class="ex-desc">Wind can excite a bridge at its natural frequency, causing destructive oscillations (Tacoma Narrows, 1940).</div>
+      </div>
+      <div class="ex-cell">
+        <div class="ex-icon">🫧</div>
+        <div class="ex-title">Washing Machines</div>
+        <div class="ex-desc">Excessive vibrations during the spin cycle when unbalanced loads excite the machine's natural frequency.</div>
+      </div>
+      <div class="ex-cell">
+        <div class="ex-icon">🏢</div>
+        <div class="ex-title">Buildings &amp; Earthquakes</div>
+        <div class="ex-desc">Seismic waves at a building's natural frequency can produce resonance, amplifying structural damage significantly.</div>
+      </div>
+      <div class="ex-cell">
+        <div class="ex-icon">⚙</div>
+        <div class="ex-title">Mechanical Systems</div>
+        <div class="ex-desc">Rotating shafts, turbines, and engines can fail catastrophically if operated at or near their critical resonance speed.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interpretation -->
+  <div class="interp-block reveal">
+    <div class="section-tag">Frequency Behaviour</div>
+    <h2>Response <em>Interpretation</em></h2>
+    <div class="interp-cards">
+      <div class="interp-card" data-num="01">
+        <div class="interp-card-tag">Low Frequency Region · r &lt; 1</div>
+        <h3>Small Response</h3>
+        <p>System follows the input closely. Amplitude ratio near unity. The quasi-static regime — like slowly pushing a spring.</p>
+      </div>
+      <div class="interp-card" data-num="02">
+        <div class="interp-card-tag">At Natural Frequency · r = 1</div>
+        <h3>Maximum Response</h3>
+        <p>System amplifies the input dramatically. Peak amplitude occurs here — the resonance condition. Dangerous without sufficient damping.</p>
+      </div>
+      <div class="interp-card" data-num="03">
+        <div class="interp-card-tag">High Frequency Region · r &gt; 1</div>
+        <h3>Reduced Response</h3>
+        <p>System cannot follow the rapidly changing input. Amplitude decreases. At very high frequencies the system effectively filters out the input.</p>
+      </div>
+    </div>
+    <div style="margin-top:2rem;">
+      <div class="img-block">
+        <img src="PLACE_FREQUENCY_RESPONSE_FULL_CURVE_IMAGE_HERE" alt="Full frequency response curve showing all three regions">
+        <div class="img-caption">Frequency Response Curve — showing low frequency, resonance peak, and high frequency regions for various damping ratios</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Applications -->
+  <div class="apps-final reveal">
+    <div class="section-tag">Engineering Domains</div>
+    <h2>Engineering <em>Applications</em></h2>
+    <div class="apps-grid">
+      <div class="app-col">
+        <h3>Mechanical</h3>
+        <ul class="app-items">
+          <li>Vibration analysis</li>
+          <li>Vehicle suspension</li>
+          <li>Shock absorbers</li>
+        </ul>
+      </div>
+      <div class="app-col">
+        <h3>Robotics</h3>
+        <ul class="app-items">
+          <li>Motion control</li>
+          <li>Precision positioning</li>
+          <li>End-effector damping</li>
+        </ul>
+      </div>
+      <div class="app-col">
+        <h3>Electrical</h3>
+        <ul class="app-items">
+          <li>RLC circuits</li>
+          <li>Signal processing</li>
+          <li>Filter design</li>
+        </ul>
+      </div>
+      <div class="app-col">
+        <h3>Civil</h3>
+        <ul class="app-items">
+          <li>Earthquake-resistant structures</li>
+          <li>Bridge design</li>
+          <li>Vibration isolation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quote -->
+  <div class="quote-block reveal">
+    <p class="quote-text">Understanding resonance is <strong>critical in engineering</strong> — it can lead to catastrophic vibration and structural failure if the natural frequency is not accounted for in the design.</p>
+  </div>
+
+  <!-- Page nav -->
+  <div class="page-nav">
+    <a href="robotics.html" class="nav-arrow">
+      <div style="text-align:right">
+        <div class="nav-arrow-label">Next Chapter</div>
+        <div class="nav-arrow-title">Differential Equations in Robotics</div>
+      </div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <p>K.L.E Technological University · 25EMAB102</p>
+  <span class="footer-eq">ω = ωₙ = √(k/m)</span>
+  <p>Guide: Dr. Narayan Swamy</p>
+</footer>
+
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

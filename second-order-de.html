@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Second Order D.E. — D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d; --paper: #f5f0e8; --cream: #ede8db;
+    --gold: #b8860b; --rust: #8b3a0f; --muted: #6b6354;
+    --line: #c8bfa8; --dark: #1a1510; --forest: #1e2b1e; --warm-red: #7a1f0f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--paper); color: var(--ink); font-family: 'JetBrains Mono', monospace; min-height: 100vh; }
+
+  .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--gold); z-index: 300; transition: width 0.1s; width: 0%; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; padding: 1.2rem 2.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); background: rgba(245,240,232,0.92); backdrop-filter: blur(12px); }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  .hero-banner { margin-top: 64px; background: var(--forest); padding: 6rem 3rem; position: relative; overflow: hidden; }
+  .hero-banner::before { content: 'x″'; position: absolute; right: 5%; bottom: -2rem; font-family: 'Cormorant Garamond', serif; font-size: 18rem; font-weight: 300; color: rgba(255,255,255,0.03); line-height: 1; pointer-events: none; }
+  .hero-banner::after { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; }
+  .hero-inner { position: relative; z-index: 1; }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 7vw, 6rem); font-weight: 300; line-height: 1.05; color: #f0ebe0; max-width: 700px; opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards; }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-formula { display: inline-block; margin-top: 2.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-style: italic; color: rgba(240,235,224,0.6); border-left: 3px solid var(--gold); padding-left: 1.2rem; opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards; }
+
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .block-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .block-section > h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: var(--ink); margin-bottom: 0.4rem; }
+  .sub-desc { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; align-items: start; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+
+  .def-box { background: var(--forest); color: #f0ebe0; padding: 2.5rem; border-left: 4px solid var(--gold); }
+  .def-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .def-eq { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-style: italic; margin-bottom: 1.5rem; line-height: 1.3; }
+  .var-row { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 0.4rem; }
+  .var-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-style: italic; color: var(--gold); min-width: 3rem; }
+  .var-desc { font-size: 0.65rem; color: rgba(240,235,224,0.6); }
+
+  /* Applications grid */
+  .app-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 2rem; }
+  .app-cell { background: var(--cream); padding: 1.2rem 1.5rem; transition: background 0.3s; }
+  .app-cell:hover { background: var(--paper); }
+  .app-cell .app-icon { font-size: 1.3rem; margin-bottom: 0.4rem; }
+  .app-cell .app-name { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: var(--ink); }
+
+  /* Solved example */
+  .solved-card { border: 1px solid var(--line); overflow: hidden; }
+  .solved-header { background: var(--ink); padding: 1rem 1.8rem; display: flex; justify-content: space-between; align-items: center; }
+  .solved-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 300; color: #f0ebe0; }
+  .solved-tag { font-size: 0.6rem; letter-spacing: 0.15em; color: var(--gold); }
+  .step-row { display: grid; grid-template-columns: 80px 1fr; gap: 0; border-bottom: 1px solid var(--line); }
+  .step-row:last-child { border-bottom: none; }
+  .step-label { background: var(--cream); padding: 1.2rem 1rem; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); border-right: 1px solid var(--line); display: flex; align-items: center; justify-content: center; text-align: center; }
+  .step-content { padding: 1.2rem 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; line-height: 1.9; color: var(--ink); }
+  .step-content .c { color: var(--gold); }
+  .step-content .v { color: var(--rust); font-weight: 500; }
+  .answer-row { display: flex; align-items: center; gap: 0.75rem; padding: 1.2rem 1.5rem; background: rgba(184,134,11,0.05); border-top: 1px solid var(--line); }
+  .answer-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--forest); color: var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; padding: 0.5rem 1.2rem; }
+  .answer-badge::before { content: '✓'; color: #8fd9c4; }
+
+  /* Damping cards */
+  .damping-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 2rem 0; }
+  .damp-card { background: var(--cream); padding: 2rem 1.5rem; transition: background 0.3s; }
+  .damp-card:hover { background: var(--paper); }
+  .damp-type { display: inline-block; font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.25rem 0.7rem; margin-bottom: 1rem; }
+  .damp-type.under { background: var(--forest); color: #f0ebe0; }
+  .damp-type.critical { background: var(--gold); color: var(--ink); }
+  .damp-type.over { background: var(--warm-red); color: #f0ebe0; }
+  .damp-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; color: var(--ink); margin-bottom: 0.75rem; }
+  .damp-condition { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--gold); margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: var(--paper); border-left: 2px solid var(--gold); }
+  .damp-traits { list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .damp-traits li { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--muted); padding: 0.5rem 0; border-bottom: 1px solid rgba(200,191,168,0.5); display: flex; gap: 0.75rem; }
+  .damp-traits li:last-child { border-bottom: none; }
+  .damp-traits li::before { content: '·'; color: var(--gold); }
+  .damp-ex { font-size: 0.62rem; color: var(--gold); margin-top: 1rem; letter-spacing: 0.05em; }
+
+  /* Comparison table */
+  .compare-table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+  .compare-table thead tr { background: var(--ink); }
+  .compare-table th { padding: 1rem 1.5rem; text-align: left; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--paper); font-weight: 400; }
+  .compare-table td { padding: 0.9rem 1.5rem; border-bottom: 1px solid var(--line); font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--muted); }
+  .compare-table tr:hover td { background: var(--cream); }
+  .compare-table td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink); }
+
+  /* Interactive spring-mass simulator */
+  .sim-wrap { background: #fff; border: 1px solid var(--line); padding: 1.5rem; }
+  .sim-title { font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; text-align: center; }
+  canvas#springCanvas { display: block; margin: 0 auto; }
+  .sim-controls { display: flex; gap: 2rem; margin-top: 1rem; flex-wrap: wrap; justify-content: center; }
+  .ctrl-group { display: flex; flex-direction: column; gap: 0.3rem; align-items: center; }
+  .ctrl-group label { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .ctrl-group input[type="range"] { width: 110px; accent-color: var(--gold); cursor: pointer; }
+  .ctrl-group .cval { font-family: 'Cormorant Garamond', serif; font-size: 0.9rem; color: var(--gold); }
+  .damp-indicator { text-align: center; margin-top: 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; }
+  .damp-indicator span { padding: 0.25rem 0.8rem; }
+
+  .conclusion-block { background: var(--forest); padding: 3rem; border-left: 4px solid var(--gold); }
+  .conclusion-block h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--gold); margin-bottom: 1.5rem; }
+  .conclusion-block p { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; line-height: 1.8; color: rgba(240,235,224,0.75); margin-bottom: 0.75rem; }
+
+  .page-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid var(--line); }
+  .nav-arrow { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--ink); transition: gap 0.3s; }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+    .two-col, .damping-cards { grid-template-columns: 1fr; gap: 2rem; }
+    .app-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html" class="active">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+     <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+   </ul>
+</nav>
+
+
+
+<header class="hero-banner">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Chapter 03 · Oscillations</p>
+    <h1 class="hero-title">Second Order<br><em>Differential Equation</em></h1>
+    <div class="hero-formula">mẍ + cẋ + kx = 0</div>
+  </div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Introduction -->
+  <div class="block-section reveal">
+    <div class="section-tag">Introduction</div>
+    <h2>The General <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Form</em></h2>
+    <p class="sub-desc">Equations containing the second derivative — modelling acceleration, vibration, oscillation</p>
+
+    <div class="two-col">
+      <div>
+        <div class="def-box">
+          <div class="def-label">General Form</div>
+          <div class="def-eq">a(d²y/dx²) + b(dy/dx) + cy = f(x)</div>
+          <div class="var-row"><span class="var-sym">a, b, c</span><span class="var-desc">= constants</span></div>
+          <div class="var-row"><span class="var-sym">y</span><span class="var-desc">= dependent variable</span></div>
+          <div class="var-row"><span class="var-sym">f(x)</span><span class="var-desc">= forcing function</span></div>
+        </div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.8;color:var(--ink);margin-top:1.5rem;">Unlike first-order equations, second-order equations can model <em style="color:var(--gold);">oscillatory behaviour</em> and energy storage — making them essential across engineering and physics.</p>
+        <div class="app-grid">
+          <div class="app-cell"><div class="app-icon">🔧</div><div class="app-name">Mechanical Vibrations</div></div>
+          <div class="app-cell"><div class="app-icon">🚗</div><div class="app-name">Vehicle Suspension</div></div>
+          <div class="app-cell"><div class="app-icon">🤖</div><div class="app-name">Robotics</div></div>
+          <div class="app-cell"><div class="app-icon">⚡</div><div class="app-name">Electrical Circuits</div></div>
+          <div class="app-cell"><div class="app-icon">🏗️</div><div class="app-name">Structural Engineering</div></div>
+          <div class="app-cell"><div class="app-icon">✈️</div><div class="app-name">Aerospace Systems</div></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="background:var(--cream);border:1px solid var(--line);padding:2rem;">
+          <div class="section-tag" style="margin-bottom:1.2rem;">Spring-Mass-Damper System</div>
+          <div class="def-box" style="margin-bottom:1.5rem;">
+            <div class="def-label">Equation of Motion</div>
+            <div class="def-eq">mẍ + cẋ + kx = 0</div>
+            <div class="var-row"><span class="var-sym">m</span><span class="var-desc">= Mass (stores kinetic energy)</span></div>
+            <div class="var-row"><span class="var-sym">c</span><span class="var-desc">= Damping coefficient (dissipates energy)</span></div>
+            <div class="var-row"><span class="var-sym">k</span><span class="var-desc">= Spring constant (stores potential energy)</span></div>
+            <div class="var-row"><span class="var-sym">x</span><span class="var-desc">= Displacement</span></div>
+          </div>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--muted);line-height:1.6;">The damper gradually reduces oscillations and helps the system reach equilibrium.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Solved Example -->
+  <div class="block-section reveal">
+    <div class="section-tag">Worked Example</div>
+    <h2>Critically Damped <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Solution</em></h2>
+    <p class="sub-desc">Solving a second-order homogeneous equation with repeated roots</p>
+
+    <div class="two-col">
+      <div class="solved-card">
+        <div class="solved-header">
+          <h3>Solved Example</h3>
+          <span class="solved-tag">d²x/dt² + 4(dx/dt) + 4x = 0</span>
+        </div>
+        <div class="solved-steps">
+          <div class="step-row">
+            <div class="step-label">Aux. Eq.</div>
+            <div class="step-content"><span class="c">// Characteristic equation</span><br>m² + 4m + 4 = 0<br>(m + 2)² = 0</div>
+          </div>
+          <div class="step-row">
+            <div class="step-label">Roots</div>
+            <div class="step-content"><span class="c">// Repeated root</span><br>m = −2, −2 (repeated)</div>
+          </div>
+          <div class="step-row">
+            <div class="step-label">Solution</div>
+            <div class="step-content"><span class="c">// General solution for repeated roots</span><br>x(t) = <span class="v">(C₁ + C₂t)e^(−2t)</span></div>
+          </div>
+        </div>
+        <div class="answer-row">
+          <div class="answer-badge">x(t) = (C₁ + C₂t)e^(−2t)</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="background:var(--cream);border:1px solid var(--line);padding:2rem;">
+          <div class="section-tag" style="margin-bottom:1rem;">Interpretation</div>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.8;color:var(--ink);margin-bottom:1rem;">The displacement decreases with time. The system returns to equilibrium <em style="color:var(--gold);">without oscillating</em> — the hallmark of a critically damped system.</p>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:1rem;line-height:1.7;color:var(--muted);">This represents the fastest return to equilibrium without any overshoot — ideal for precision instruments and automatic doors.</p>
+        </div>
+
+        <!-- Interactive simulator -->
+        <div class="sim-wrap" style="margin-top:1.5rem;">
+          <div class="sim-title">Interactive Spring-Mass Response</div>
+          <canvas id="springCanvas" width="380" height="200"></canvas>
+          <div class="sim-controls">
+            <div class="ctrl-group">
+              <label>Damping c</label>
+              <input type="range" id="cVal" min="0" max="40" value="16" step="1">
+              <span class="cval" id="cDisplay">c = 16</span>
+            </div>
+            <div class="ctrl-group">
+              <label>Spring k</label>
+              <input type="range" id="kVal" min="4" max="40" value="16" step="2">
+              <span class="cval" id="kDisplay">k = 16</span>
+            </div>
+            <div class="ctrl-group">
+              <label>Mass m</label>
+              <input type="range" id="mVal" min="1" max="10" value="4" step="1">
+              <span class="cval" id="mDisplay">m = 4</span>
+            </div>
+          </div>
+          <div class="damp-indicator" id="dampIndicator">
+            <span style="background:var(--gold);color:var(--ink);padding:0.25rem 0.8rem;">Critically Damped</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Types of Damping -->
+  <div class="block-section reveal">
+    <div class="section-tag">Classification</div>
+    <h2>Types of <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);">Damping</em></h2>
+    <p class="sub-desc">Three distinct responses depending on the damping ratio ζ = c / (2√mk)</p>
+
+    <div class="damping-cards">
+      <div class="damp-card">
+        <span class="damp-type under">Underdamped</span>
+        <h3>Oscillates to equilibrium</h3>
+        <div class="damp-condition">c² &lt; 4mk &nbsp;|&nbsp; ζ &lt; 1</div>
+        <ul class="damp-traits">
+          <li>Oscillates about equilibrium</li>
+          <li>Amplitude decreases gradually</li>
+          <li>Most common practical system</li>
+          <li>Complex conjugate roots</li>
+        </ul>
+        <div class="damp-ex">Examples: vehicle suspension, building vibrations, robotic joints</div>
+      </div>
+      <div class="damp-card">
+        <span class="damp-type critical">Critically Damped</span>
+        <h3>Fastest return, no overshoot</h3>
+        <div class="damp-condition">c² = 4mk &nbsp;|&nbsp; ζ = 1</div>
+        <ul class="damp-traits">
+          <li>Fastest return to equilibrium</li>
+          <li>No oscillations whatsoever</li>
+          <li>Most efficient damping</li>
+          <li>Repeated real roots</li>
+        </ul>
+        <div class="damp-ex">Examples: automatic doors, precision measuring devices</div>
+      </div>
+      <div class="damp-card">
+        <span class="damp-type over">Overdamped</span>
+        <h3>Slow, sluggish return</h3>
+        <div class="damp-condition">c² &gt; 4mk &nbsp;|&nbsp; ζ &gt; 1</div>
+        <ul class="damp-traits">
+          <li>No oscillations</li>
+          <li>Very slow return to rest</li>
+          <li>Excessive energy dissipation</li>
+          <li>Two distinct real roots</li>
+        </ul>
+        <div class="damp-ex">Examples: heavy industrial shock absorbers, hydraulic door closers</div>
+      </div>
+    </div>
+
+    <table class="compare-table">
+      <thead>
+        <tr><th>Property</th><th>Underdamped</th><th>Critically Damped</th><th>Overdamped</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Oscillation</td><td>Yes</td><td>No</td><td>No</td></tr>
+        <tr><td>Speed to equilibrium</td><td>Medium</td><td>Fastest</td><td>Slowest</td></tr>
+        <tr><td>Overshoot</td><td>Present</td><td>None</td><td>None</td></tr>
+        <tr><td>Energy loss</td><td>Gradual</td><td>Optimal</td><td>Excessive</td></tr>
+        <tr><td>Practical use</td><td>Suspension systems</td><td>Control systems</td><td>Heavy dampers</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Conclusion -->
+  <div class="reveal">
+    <div class="conclusion-block">
+      <h2>Conclusion</h2>
+      <p>Second-order differential equations model the interplay between inertia, damping, and restoring forces — the foundation of all vibration analysis.</p>
+      <p>Understanding the three damping cases is critical: underdamped systems are common in practice, critically damped systems are optimal for control applications, and overdamped systems appear in heavy industrial equipment.</p>
+    </div>
+  </div>
+
+  <div class="page-nav">
+    <a href="patterns-formulas.html" class="nav-arrow" style="flex-direction:row-reverse;">
+      <div style="text-align:left"><div class="nav-arrow-label">Previous</div><div class="nav-arrow-title">Patterns &amp; Formulas</div></div>
+      <div class="nav-arrow-icon" style="transform:scaleX(-1);">→</div>
+    </a>
+    <a href="solution-second-order.html" class="nav-arrow">
+      <div style="text-align:right"><div class="nav-arrow-label">Next Chapter</div><div class="nav-arrow-title">Solutions: 2nd Order</div></div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+</div>
+
+<footer>
+  <p>K.L.E Technological University · D.E Assignment</p>
+  <span class="footer-eq">mẍ + cẋ + kx = 0</span>
+  <p>Second Order D.E.</p>
+</footer>
+
+<script>
+  window.addEventListener('scroll', () => {
+    const s = document.documentElement.scrollTop;
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    document.getElementById('progressBar').style.width = (s / h * 100) + '%';
+  });
+  const reveals = document.querySelectorAll('.reveal');
+  new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }), { threshold: 0.06 }).observe && reveals.forEach(el => new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }), { threshold: 0.06 }).observe(el));
+
+  // Spring-mass simulator
+  const canvas = document.getElementById('springCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  let animId;
+
+  function getDampType(c, m, k) {
+    const disc = c * c - 4 * m * k;
+    if (disc < -0.5) return { label: 'Underdamped', color: '#1e2b1e', textColor: '#f0ebe0' };
+    if (Math.abs(disc) <= 0.5) return { label: 'Critically Damped', color: '#b8860b', textColor: '#0d0d0d' };
+    return { label: 'Overdamped', color: '#7a1f0f', textColor: '#f0ebe0' };
+  }
+
+  function simulate(c, m, k) {
+    const dt = 0.02;
+    const pts = [];
+    let x = 1, v = 0;
+    for (let i = 0; i < 300; i++) {
+      pts.push(x);
+      const a = (-c * v - k * x) / m;
+      v += a * dt;
+      x += v * dt;
+    }
+    return pts;
+  }
+
+  function draw() {
+    const c = +document.getElementById('cVal').value;
+    const k = +document.getElementById('kVal').value;
+    const m = +document.getElementById('mVal').value;
+    document.getElementById('cDisplay').textContent = 'c = ' + c;
+    document.getElementById('kDisplay').textContent = 'k = ' + k;
+    document.getElementById('mDisplay').textContent = 'm = ' + m;
+    const dtype = getDampType(c, m, k);
+    document.getElementById('dampIndicator').innerHTML =
+      `<span style="background:${dtype.color};color:${dtype.textColor};padding:0.25rem 0.8rem;">${dtype.label}</span>`;
+
+    const pts = simulate(c, m, k);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(200,191,168,0.3)';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i < 8; i++) {
+      const y = i / 7 * H;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+
+    // Zero line
+    ctx.strokeStyle = 'rgba(107,99,84,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+
+    // Curve
+    ctx.strokeStyle = dtype.color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    pts.forEach((x, i) => {
+      const px = (i / pts.length) * W;
+      const py = H / 2 - x * (H / 2 - 20);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+  }
+
+  ['cVal', 'kVal', 'mVal'].forEach(id => document.getElementById(id).addEventListener('input', draw));
+  draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>First Order System Dynamics — D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --rust: #8b3a0f;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --dark: #1a1510;
+    --forest: #1e2b1e;
+    --warm-red: #7a1f0f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 200;
+    padding: 1.2rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    background: rgba(245,240,232,0.92);
+    backdrop-filter: blur(12px);
+  }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  /* Progress bar */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: var(--gold);
+    z-index: 300;
+    transition: width 0.1s;
+    width: 0%;
+  }
+
+  /* Hero */
+  .hero-banner {
+    margin-top: 64px;
+    background: var(--forest);
+    padding: 6rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-banner::before {
+    content: 'dy/dt';
+    position: absolute;
+    right: -1rem;
+    bottom: -1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* Grid lines on hero */
+  .hero-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(184,134,11,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(184,134,11,0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+  }
+
+  .hero-inner { position: relative; z-index: 1; }
+
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.15s ease forwards; }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.8rem, 7vw, 6rem);
+    font-weight: 300;
+    line-height: 1.05;
+    color: #f0ebe0;
+    max-width: 700px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s ease forwards;
+  }
+  .hero-title em { color: var(--gold); font-style: italic; }
+
+  .hero-formula {
+    display: inline-block;
+    margin-top: 2.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-style: italic;
+    color: rgba(240,235,224,0.6);
+    border-left: 3px solid var(--gold);
+    padding-left: 1.2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.5s ease forwards;
+  }
+
+  /* Content */
+  .content-wrap { max-width: 1100px; margin: 0 auto; padding: 5rem 3rem; }
+
+  .section-tag { font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+
+  /* Static vs Dynamic */
+  .syst-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+
+  .syst-section > h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 0.4rem;
+  }
+
+  .sub-desc { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  .system-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  .sys-card {
+    background: var(--cream);
+    padding: 2.5rem;
+    transition: background 0.3s;
+  }
+  .sys-card:hover { background: var(--paper); }
+
+  .sys-type {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    display: inline-block;
+    margin-bottom: 1.2rem;
+  }
+  .sys-type.static { background: var(--muted); color: var(--paper); }
+  .sys-type.dynamic { background: var(--gold); color: var(--ink); }
+
+  .sys-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 1rem;
+  }
+
+  .sys-card p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+  }
+
+  .sys-example {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 1rem 1.2rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-style: italic;
+    line-height: 1.5;
+    border-left: 3px solid var(--gold);
+  }
+
+  .sys-example .ex-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-style: normal;
+    margin-bottom: 0.4rem;
+  }
+
+  /* Animated icons for static/dynamic */
+  .sys-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .sys-icon.pulse { animation: pulse 2s ease-in-out infinite; }
+  .sys-icon.spin { animation: slowSpin 4s linear infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  @keyframes slowSpin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+  /* Feedback section */
+  .feedback-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+
+  .feedback-section > h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: var(--ink); margin-bottom: 0.4rem; }
+
+  .feedback-diagram {
+    margin: 2.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+
+  .fd-block {
+    flex: 1;
+    padding: 1.5rem;
+    text-align: center;
+    background: var(--cream);
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .fd-block.highlight { background: var(--ink); }
+
+  .fd-arrow {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-size: 1.2rem;
+    background: var(--line);
+    flex-shrink: 0;
+  }
+
+  .fd-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .fd-block.highlight .fd-label { color: rgba(245,240,232,0.5); }
+
+  .fd-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    color: var(--ink);
+  }
+  .fd-block.highlight .fd-name { color: var(--paper); }
+
+  .feedback-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .fb-card {
+    padding: 2rem;
+    border: 1px solid var(--line);
+    position: relative;
+    transition: border-color 0.3s;
+  }
+  .fb-card:hover { border-color: var(--gold); }
+
+  .fb-card .fb-type {
+    display: inline-block;
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.7rem;
+    margin-bottom: 1rem;
+  }
+
+  .fb-card.positive .fb-type { background: var(--warm-red); color: #fff; }
+  .fb-card.negative .fb-type { background: var(--forest); color: #fff; }
+
+  .fb-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; color: var(--ink); margin-bottom: 0.8rem; }
+
+  .fb-card p { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; line-height: 1.7; color: var(--muted); margin-bottom: 1rem; }
+
+  .fb-examples { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .fb-ex-tag { font-size: 0.6rem; padding: 0.3rem 0.8rem; border: 1px solid var(--line); color: var(--ink); transition: all 0.3s; cursor: default; }
+  .fb-ex-tag:hover { background: var(--ink); color: var(--paper); }
+
+  /* Cooling section */
+  .cooling-section { margin-bottom: 5rem; padding-bottom: 5rem; border-bottom: 1px solid var(--line); }
+  .cooling-section > h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: var(--ink); margin-bottom: 0.4rem; }
+
+  .cooling-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 4rem;
+    align-items: start;
+    margin-top: 2.5rem;
+  }
+
+  .cooling-info .formula-card {
+    background: var(--forest);
+    color: #f0ebe0;
+    padding: 2rem 2.5rem;
+    margin: 2rem 0;
+    border-left: 4px solid var(--gold);
+  }
+
+  .formula-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .formula-eq { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-style: italic; }
+  .formula-vars { margin-top: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .var-row { display: flex; align-items: baseline; gap: 0.8rem; }
+  .var-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-style: italic; color: var(--gold); min-width: 2rem; }
+  .var-desc { font-size: 0.65rem; color: rgba(240,235,224,0.65); }
+
+  .interp-list { list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .interp-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .interp-list li::before { content: '—'; color: var(--gold); flex-shrink: 0; }
+
+  /* Interactive cooling chart */
+  .chart-container {
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .chart-title {
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  canvas#coolingChart {
+    width: 100% !important;
+    height: 280px !important;
+  }
+
+  .chart-controls {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ctrl-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .ctrl-group label {
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .ctrl-group input[type="range"] {
+    width: 120px;
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+
+  .ctrl-group .val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    color: var(--gold);
+    text-align: center;
+  }
+
+  /* Direction Fields */
+  .fields-section { margin-bottom: 5rem; }
+  .fields-section > h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: var(--ink); margin-bottom: 0.4rem; }
+
+  .fields-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 4rem;
+    margin-top: 2.5rem;
+    align-items: start;
+  }
+
+  .fields-info p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+
+  .slope-table {
+    border: 1px solid var(--line);
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+  }
+
+  .slope-table th {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.7rem 1rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-align: center;
+    font-weight: 400;
+  }
+
+  .slope-table td {
+    padding: 0.7rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    transition: background 0.2s;
+  }
+
+  .slope-table tr:hover td { background: var(--cream); }
+
+  .slope-table td:last-child { color: var(--gold); font-weight: 600; }
+
+  .interp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-top: 1.5rem;
+  }
+
+  .interp-cell {
+    background: var(--cream);
+    padding: 1rem 1.2rem;
+    transition: background 0.25s;
+  }
+
+  .interp-cell:hover { background: var(--paper); }
+
+  .interp-sign {
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.3rem;
+  }
+
+  .interp-meaning {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+
+  /* Interactive slope field canvas */
+  .slope-canvas-wrap {
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+  }
+
+  canvas#slopeField {
+    display: block;
+    width: 100%;
+    cursor: crosshair;
+  }
+
+  .sf-controls {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .sf-controls label {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .sf-controls select {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    padding: 0.3rem 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--ink);
+    cursor: pointer;
+    accent-color: var(--gold);
+  }
+
+  .sf-hint {
+    font-size: 0.58rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    letter-spacing: 0.05em;
+    font-style: italic;
+  }
+
+  /* Page nav */
+  .page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .nav-arrow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--ink);
+    transition: gap 0.3s;
+  }
+  .nav-arrow:hover { gap: 1.5rem; }
+
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--ink); }
+  .nav-arrow-icon { width: 48px; height: 48px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--gold); transition: background 0.3s, color 0.3s; }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  .reveal { opacity: 0; transform: translateY(25px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .system-compare, .feedback-cards, .cooling-layout, .fields-layout { grid-template-columns: 1fr; gap: 2rem; }
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+    .feedback-diagram { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html" class="active">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+     <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+    <li><a href="Functions-of-several-variables.html">Functions</a></li>
+    <li><a href="srob.html">Robotics</a></li>
+    <li><a href="LAB1.html">LAB1</a></li>
+   </ul>
+</nav>
+
+
+
+
+<header class="hero-banner">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Chapter 02 · Dynamics</p>
+    <h1 class="hero-title">First Order<br><em>System Dynamics</em></h1>
+    <div class="hero-formula">dy/dx + P(x)y = Q(x)</div>
+  </div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Definition -->
+  <div class="reveal" style="margin-bottom:5rem;padding-bottom:5rem;border-bottom:1px solid var(--line)">
+    <div class="section-tag">Definition</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:300;color:var(--ink);margin-bottom:1.5rem;">What is a First-Order D.E?</h2>
+    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:3rem;align-items:start;">
+      <div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;line-height:1.8;color:#2a2520;margin-bottom:1.5rem;">A first-order differential equation contains only the <em style="color:var(--gold);">first derivative</em> of the dependent variable. It describes how a quantity changes at every instant, making it ideal for modeling dynamic systems.</p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.75;color:var(--muted);">First-order D.E.s are used across engineering, robotics, automation, electrical circuits, population growth, cooling systems, and chemical reactions — wherever a rate of change depends on current state.</p>
+      </div>
+      <div style="background:var(--forest);color:#f0ebe0;padding:2.5rem;border-left:4px solid var(--gold);">
+        <div class="formula-label">General Form</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-style:italic;margin-bottom:1.5rem;">dy/dx + P(x)y = Q(x)</div>
+        <div style="display:flex;flex-direction:column;gap:0.6rem;">
+          <div class="var-row"><span class="var-sym">y</span><span class="var-desc">= dependent variable</span></div>
+          <div class="var-row"><span class="var-sym">x</span><span class="var-desc">= independent variable</span></div>
+          <div class="var-row"><span class="var-sym">P(x), Q(x)</span><span class="var-desc">= functions of x</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Static vs Dynamic -->
+  <div class="syst-section reveal">
+    <div class="section-tag">Classification</div>
+    <h2>Static vs <em style="font-style:italic;color:var(--gold);">Dynamic</em> Systems</h2>
+    <p class="sub-desc">Understanding the difference between memory-less and memory systems</p>
+
+    <div class="system-compare">
+      <div class="sys-card">
+        <span class="sys-icon">💡</span>
+        <span class="sys-type static">Static System</span>
+        <h3>Output depends on<br>present input only</h3>
+        <p>A static system responds instantly to its input with no dependence on history. Remove the input, and the output immediately disappears.</p>
+        <div class="sys-example">
+          <div class="ex-label">Example</div>
+          Light bulb brightness depends directly on the switch position — instant on/off.
+        </div>
+      </div>
+      <div class="sys-card">
+        <span class="sys-icon spin">🌀</span>
+        <span class="sys-type dynamic">Dynamic System</span>
+        <h3>Output depends on present <em style="font-style:italic;">&amp; past</em> inputs</h3>
+        <p>A dynamic system has memory. Stored energy or state means the system continues to respond even after the input is removed.</p>
+        <div class="sys-example">
+          <div class="ex-label">Example</div>
+          A fan continues spinning after power is cut — kinetic energy is stored in the rotating blades.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback -->
+  <div class="feedback-section reveal">
+    <div class="section-tag">Control Theory</div>
+    <h2>Feedback in <em style="font-style:italic;color:var(--gold);">Systems</em></h2>
+    <p class="sub-desc">Returning part of the output back to the input</p>
+
+    <div class="feedback-diagram">
+      <div class="fd-block">
+        <div class="fd-label">Input</div>
+        <div class="fd-name">r(t)</div>
+      </div>
+      <div class="fd-arrow">→</div>
+      <div class="fd-block highlight">
+        <div class="fd-label">Controller</div>
+        <div class="fd-name" style="color:var(--gold);">System</div>
+      </div>
+      <div class="fd-arrow">→</div>
+      <div class="fd-block">
+        <div class="fd-label">Output</div>
+        <div class="fd-name">y(t)</div>
+      </div>
+      <div class="fd-arrow" style="transform:scaleX(-1);">→</div>
+      <div class="fd-block" style="background:rgba(184,134,11,0.1);">
+        <div class="fd-label">Feedback</div>
+        <div class="fd-name" style="color:var(--gold);">loop</div>
+      </div>
+    </div>
+
+    <div class="feedback-cards">
+      <div class="fb-card positive">
+        <span class="fb-type">Positive Feedback</span>
+        <h3>Amplifies Response</h3>
+        <p>Increases system response by adding the fed-back signal to the input. Can cause exponential growth and potentially unstable behavior.</p>
+        <div class="fb-examples">
+          <span class="fb-ex-tag">Microphone squeal</span>
+          <span class="fb-ex-tag">Population explosion</span>
+          <span class="fb-ex-tag">Chain reactions</span>
+        </div>
+      </div>
+      <div class="fb-card negative">
+        <span class="fb-type">Negative Feedback ★ Preferred</span>
+        <h3>Opposes Change</h3>
+        <p>Subtracts the fed-back signal from the input, opposing deviations. This improves stability and accuracy. Used in virtually all engineering control systems.</p>
+        <div class="fb-examples">
+          <span class="fb-ex-tag">Air conditioner</span>
+          <span class="fb-ex-tag">Thermostat</span>
+          <span class="fb-ex-tag">Cruise control</span>
+          <span class="fb-ex-tag">Op-amp circuits</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cooling curve -->
+  <div class="cooling-section reveal">
+    <div class="section-tag">Real-World Application</div>
+    <h2>Cooling Curve &amp; <em style="font-style:italic;color:var(--gold);">Newton's Law</em></h2>
+    <p class="sub-desc">First-order dynamic behavior in thermal systems</p>
+
+    <div class="cooling-layout">
+      <div class="cooling-info">
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;line-height:1.8;color:var(--ink);margin-bottom:1rem;">The cooling of a hot object follows a first-order differential equation — one of the most elegant examples of exponential decay in nature.</p>
+
+        <div class="formula-card">
+          <div class="formula-label">Newton's Law of Cooling</div>
+          <div class="formula-eq">dT/dt = −k(T − Ts)</div>
+          <div class="formula-vars">
+            <div class="var-row"><span class="var-sym">T</span><span class="var-desc">= Temperature of object at time t</span></div>
+            <div class="var-row"><span class="var-sym">Ts</span><span class="var-desc">= Surrounding (ambient) temperature</span></div>
+            <div class="var-row"><span class="var-sym">k</span><span class="var-desc">= Cooling constant (k > 0)</span></div>
+          </div>
+        </div>
+
+        <ul class="interp-list">
+          <li>Temperature starts at a high initial value</li>
+          <li>Decreases rapidly at first (large temperature difference)</li>
+          <li>Cooling rate gradually slows as gap narrows</li>
+          <li>Temperature asymptotically approaches room temperature</li>
+        </ul>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:var(--gold);margin-top:1.5rem;font-weight:600;">This behavior is called exponential decay.</p>
+      </div>
+
+      <div>
+        <div class="chart-container">
+          <div class="chart-title">Interactive Cooling Curve — T(t) = Ts + (T₀ − Ts)e^(−kt)</div>
+          <canvas id="coolingChart"></canvas>
+          <div class="chart-controls">
+            <div class="ctrl-group">
+              <label>Initial Temp T₀</label>
+              <input type="range" id="t0" min="50" max="150" value="80" step="5">
+              <span class="val" id="t0val">80°C</span>
+            </div>
+            <div class="ctrl-group">
+              <label>Ambient Ts</label>
+              <input type="range" id="ts" min="10" max="30" value="20" step="1">
+              <span class="val" id="tsval">20°C</span>
+            </div>
+            <div class="ctrl-group">
+              <label>Cooling Rate k</label>
+              <input type="range" id="kval" min="1" max="20" value="5" step="1">
+              <span class="val" id="kvalval">0.05</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Direction Fields -->
+  <div class="fields-section reveal">
+    <div class="section-tag">Visualization Tool</div>
+    <h2>Direction <em style="font-style:italic;color:var(--gold);">Fields</em></h2>
+    <p class="sub-desc">A graphical method to visualize solutions without solving them completely</p>
+
+    <div class="fields-layout">
+      <div class="fields-info">
+        <p>A direction field (or slope field) draws tiny line segments at every point (x, y) showing the slope dy/dx predicted by the differential equation — without needing to solve it.</p>
+
+        <p>For <strong>dy/dx = x + y</strong>, we compute slopes at sample points:</p>
+
+        <table class="slope-table">
+          <thead>
+            <tr>
+              <th>Point (x, y)</th>
+              <th>Calculation</th>
+              <th>Slope</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>(0, 0)</td><td>0 + 0</td><td>0</td></tr>
+            <tr><td>(1, 0)</td><td>1 + 0</td><td>1</td></tr>
+            <tr><td>(0, 1)</td><td>0 + 1</td><td>1</td></tr>
+            <tr><td>(1, 1)</td><td>1 + 1</td><td>2</td></tr>
+            <tr><td>(-1, 1)</td><td>-1 + 1</td><td>0</td></tr>
+            <tr><td>(2, -1)</td><td>2 + (-1)</td><td>1</td></tr>
+          </tbody>
+        </table>
+
+        <div class="interp-grid">
+          <div class="interp-cell">
+            <div class="interp-sign">Positive slope</div>
+            <div class="interp-meaning">→ Solution rises</div>
+          </div>
+          <div class="interp-cell">
+            <div class="interp-sign">Negative slope</div>
+            <div class="interp-meaning">→ Solution falls</div>
+          </div>
+          <div class="interp-cell">
+            <div class="interp-sign">Larger slope</div>
+            <div class="interp-meaning">→ Faster increase</div>
+          </div>
+          <div class="interp-cell">
+            <div class="interp-sign">Smaller slope</div>
+            <div class="interp-meaning">→ Slower increase</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="slope-canvas-wrap">
+          <div class="chart-title">Interactive Slope Field</div>
+          <canvas id="slopeField" width="400" height="350"></canvas>
+          <div class="sf-controls">
+            <label>Equation:</label>
+            <select id="sfEq">
+              <option value="xpy">dy/dx = x + y</option>
+              <option value="xmy">dy/dx = x − y</option>
+              <option value="y">dy/dx = y</option>
+              <option value="negy">dy/dx = −y</option>
+              <option value="x">dy/dx = x</option>
+            </select>
+          </div>
+          <p class="sf-hint">Click on the canvas to draw a solution curve through that point</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page nav -->
+  <div class="page-nav">
+    <a href="de-intro.html" class="nav-arrow" style="flex-direction:row-reverse;">
+      <div style="text-align:left">
+        <div class="nav-arrow-label">Previous Chapter</div>
+        <div class="nav-arrow-title">Introduction to D.E.</div>
+      </div>
+      <div class="nav-arrow-icon" style="transform:scaleX(-1);">→</div>
+    </a>
+    <a href="de-index.html" class="nav-arrow">
+      <div style="text-align:right">
+        <div class="nav-arrow-label">View All Topics</div>
+        <div class="nav-arrow-title">Full Index</div>
+      </div>
+      <div class="nav-arrow-icon">☰</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <p>K.L.E Technological University · 25EMAB102</p>
+  <span class="footer-eq">dT/dt = −k(T − Ts)</span>
+  <p>Guide: Dr. Narayan Swamy</p>
+</footer>
+
+<script>
+// ── Progress bar ──
+window.addEventListener('scroll', () => {
+  const scrollTop = document.documentElement.scrollTop;
+  const docH = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('progressBar').style.width = (scrollTop / docH * 100) + '%';
+});
+
+// ── Scroll reveal ──
+const reveals = document.querySelectorAll('.reveal');
+const revObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+reveals.forEach(el => revObs.observe(el));
+
+// ── Cooling Curve Chart ──
+const coolingCtx = document.getElementById('coolingChart').getContext('2d');
+let coolingChart;
+
+function buildCoolingData(T0, Ts, k) {
+  const labels = [], data = [];
+  for (let t = 0; t <= 80; t += 2) {
+    labels.push(t);
+    data.push(+(Ts + (T0 - Ts) * Math.exp(-k/100 * t)).toFixed(2));
+  }
+  return { labels, data };
+}
+
+function drawCoolingChart() {
+  const T0 = +document.getElementById('t0').value;
+  const Ts = +document.getElementById('ts').value;
+  const k  = +document.getElementById('kval').value;
+
+  document.getElementById('t0val').textContent  = T0 + '°C';
+  document.getElementById('tsval').textContent  = Ts + '°C';
+  document.getElementById('kvalval').textContent = (k/100).toFixed(2);
+
+  const { labels, data } = buildCoolingData(T0, Ts, k);
+
+  if (coolingChart) coolingChart.destroy();
+
+  coolingChart = new Chart(coolingCtx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'T(t) °C',
+        data,
+        borderColor: '#b8860b',
+        backgroundColor: 'rgba(184,134,11,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 0,
+        tension: 0.4,
+        fill: true
+      }, {
+        label: `Ambient Ts = ${Ts}°C`,
+        data: labels.map(() => Ts),
+        borderColor: 'rgba(107,99,84,0.4)',
+        borderWidth: 1,
+        borderDash: [6, 4],
+        pointRadius: 0,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: false,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { font: { family: 'JetBrains Mono', size: 10 }, color: '#6b6354' } }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Time (t)', font: { family: 'JetBrains Mono', size: 10 }, color: '#6b6354' },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { font: { family: 'JetBrains Mono', size: 9 }, color: '#6b6354', maxTicksLimit: 10 }
+        },
+        y: {
+          title: { display: true, text: 'Temperature (°C)', font: { family: 'JetBrains Mono', size: 10 }, color: '#6b6354' },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { font: { family: 'JetBrains Mono', size: 9 }, color: '#6b6354' }
+        }
+      }
+    }
+  });
+}
+
+// Load Chart.js
+const chartScript = document.createElement('script');
+chartScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js';
+chartScript.onload = drawCoolingChart;
+document.head.appendChild(chartScript);
+
+['t0','ts','kval'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => { if (typeof Chart !== 'undefined') drawCoolingChart(); });
+});
+
+// ── Slope Field ──
+const sfCanvas = document.getElementById('slopeField');
+const sfCtx = sfCanvas.getContext('2d');
+const W = sfCanvas.width, H = sfCanvas.height;
+const RANGE = 4.5;
+const GRID = 18;
+
+let solutionPoints = [];
+let currentEq = 'xpy';
+
+const eqFns = {
+  xpy: (x, y) => x + y,
+  xmy: (x, y) => x - y,
+  y:   (x, y) => y,
+  negy: (x, y) => -y,
+  x:   (x, y) => x
+};
+
+function toCanvas(x, y) {
+  return {
+    cx: (x + RANGE) / (2 * RANGE) * W,
+    cy: H - (y + RANGE) / (2 * RANGE) * H
+  };
+}
+
+function toMath(cx, cy) {
+  return {
+    x: (cx / W) * 2 * RANGE - RANGE,
+    y: ((H - cy) / H) * 2 * RANGE - RANGE
+  };
+}
+
+function drawSlopeField() {
+  sfCtx.clearRect(0, 0, W, H);
+
+  // Background
+  sfCtx.fillStyle = '#fff';
+  sfCtx.fillRect(0, 0, W, H);
+
+  // Grid
+  sfCtx.strokeStyle = 'rgba(200,191,168,0.4)';
+  sfCtx.lineWidth = 0.5;
+  for (let i = 0; i <= GRID; i++) {
+    const x = i / GRID * W;
+    const y = i / GRID * H;
+    sfCtx.beginPath(); sfCtx.moveTo(x, 0); sfCtx.lineTo(x, H); sfCtx.stroke();
+    sfCtx.beginPath(); sfCtx.moveTo(0, y); sfCtx.lineTo(W, y); sfCtx.stroke();
+  }
+
+  // Axes
+  const { cx: ax } = toCanvas(0, 0);
+  const { cy: ay } = toCanvas(0, 0);
+  sfCtx.strokeStyle = 'rgba(13,13,13,0.3)';
+  sfCtx.lineWidth = 1;
+  sfCtx.beginPath(); sfCtx.moveTo(ax, 0); sfCtx.lineTo(ax, H); sfCtx.stroke();
+  sfCtx.beginPath(); sfCtx.moveTo(0, ay); sfCtx.lineTo(W, ay); sfCtx.stroke();
+
+  // Slope arrows
+  const step = (2 * RANGE) / GRID;
+  const fn = eqFns[currentEq];
+  const L = W / GRID * 0.38;
+
+  for (let i = 0; i <= GRID; i++) {
+    for (let j = 0; j <= GRID; j++) {
+      const mx = -RANGE + i * step;
+      const my = -RANGE + j * step;
+      const slope = fn(mx, my);
+      const angle = Math.atan(slope);
+      const { cx, cy } = toCanvas(mx, my);
+
+      const dx = L * Math.cos(angle);
+      const dy = L * Math.sin(angle);
+
+      // Color by slope magnitude
+      const mag = Math.min(Math.abs(slope) / 3, 1);
+      const r = Math.round(184 * (1 - mag) + 139 * mag);
+      const g = Math.round(134 * (1 - mag) + 58 * mag);
+      const b = Math.round(11 * (1 - mag));
+      sfCtx.strokeStyle = `rgb(${r},${g},${b})`;
+      sfCtx.lineWidth = 1.2;
+      sfCtx.beginPath();
+      sfCtx.moveTo(cx - dx, cy + dy);
+      sfCtx.lineTo(cx + dx, cy - dy);
+      sfCtx.stroke();
+
+      // Arrowhead
+      sfCtx.fillStyle = `rgb(${r},${g},${b})`;
+      sfCtx.beginPath();
+      sfCtx.arc(cx + dx, cy - dy, 1.5, 0, Math.PI * 2);
+      sfCtx.fill();
+    }
+  }
+
+  // Solution curves
+  solutionPoints.forEach(({ x0, y0 }) => {
+    drawSolutionCurve(x0, y0);
+  });
+}
+
+function drawSolutionCurve(x0, y0) {
+  const fn = eqFns[currentEq];
+  const h = 0.05;
+  const steps = 120;
+
+  sfCtx.strokeStyle = '#8b3a0f';
+  sfCtx.lineWidth = 2;
+  sfCtx.setLineDash([]);
+  sfCtx.beginPath();
+
+  // Forward
+  let x = x0, y = y0;
+  let started = false;
+  for (let i = 0; i <= steps; i++) {
+    const { cx, cy } = toCanvas(x, y);
+    if (cx >= 0 && cx <= W && cy >= 0 && cy <= H) {
+      if (!started) { sfCtx.moveTo(cx, cy); started = true; }
+      else sfCtx.lineTo(cx, cy);
+    }
+    const k1 = fn(x, y);
+    x += h; y += h * k1;
+  }
+
+  // Backward
+  x = x0; y = y0;
+  for (let i = 0; i <= steps; i++) {
+    const { cx, cy } = toCanvas(x, y);
+    if (cx >= 0 && cx <= W && cy >= 0 && cy <= H) sfCtx.lineTo(cx, cy);
+    const k1 = fn(x, y);
+    x -= h; y -= h * k1;
+  }
+
+  sfCtx.stroke();
+
+  // Start point
+  const { cx, cy } = toCanvas(x0, y0);
+  sfCtx.fillStyle = '#8b3a0f';
+  sfCtx.beginPath();
+  sfCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+  sfCtx.fill();
+}
+
+sfCanvas.addEventListener('click', (e) => {
+  const rect = sfCanvas.getBoundingClientRect();
+  const px = (e.clientX - rect.left) * (W / rect.width);
+  const py = (e.clientY - rect.top) * (H / rect.height);
+  const { x, y } = toMath(px, py);
+  solutionPoints.push({ x0: x, y0: y });
+  if (solutionPoints.length > 5) solutionPoints.shift();
+  drawSlopeField();
+});
+
+document.getElementById('sfEq').addEventListener('change', (e) => {
+  currentEq = e.target.value;
+  solutionPoints = [];
+  drawSlopeField();
+});
+
+// Initial draw
+setTimeout(drawSlopeField, 100);
+</script>
+</body>
+</html>

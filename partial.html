@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Partial Differential Equations — D.E Assignment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f0e8;
+    --cream: #ede8db;
+    --gold: #b8860b;
+    --rust: #8b3a0f;
+    --muted: #6b6354;
+    --line: #c8bfa8;
+    --sage: #4a5a4a;
+    --blue-dark: #1c2b3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 200;
+    padding: 1.2rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    background: rgba(245,240,232,0.92);
+    backdrop-filter: blur(12px);
+  }
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+  }
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a.active { color: var(--ink); font-weight: 500; }
+
+  .hero-banner {
+    margin-top: 64px;
+    background: var(--blue-dark);
+    padding: 6rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-banner::before {
+    content: '∂u/∂t';
+    position: absolute;
+    right: -2rem;
+    bottom: -1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .hero-eyebrow {
+    font-size: 0.62rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.15s ease forwards;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.8rem, 7vw, 6rem);
+    font-weight: 300;
+    line-height: 1.05;
+    color: #f0ebe0;
+    max-width: 700px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s ease forwards;
+  }
+  .hero-title em { color: var(--gold); font-style: italic; }
+  .hero-formula {
+    display: inline-block;
+    margin-top: 2.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-style: italic;
+    color: rgba(240,235,224,0.6);
+    border-left: 3px solid var(--gold);
+    padding-left: 1.2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.5s ease forwards;
+  }
+
+  .content-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5rem 3rem;
+  }
+
+  /* Intro block */
+  .intro-block {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 4rem;
+    align-items: start;
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .intro-aside { position: sticky; top: 90px; }
+  .section-tag {
+    font-size: 0.58rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+  .aside-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 300;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+  .aside-heading em { font-style: italic; color: var(--gold); }
+  .aside-line { width: 40px; height: 2px; background: var(--gold); margin: 1.5rem 0; }
+  .aside-note {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .intro-body p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    line-height: 1.85;
+    color: #2a2520;
+    margin-bottom: 1.5rem;
+  }
+  .lead-p { font-size: 1.5rem !important; font-weight: 300; }
+
+  /* Formula card */
+  .formula-card {
+    background: var(--blue-dark);
+    color: #f0ebe0;
+    padding: 2rem 2.5rem;
+    margin: 2.5rem 0;
+    border-left: 4px solid var(--gold);
+    position: relative;
+    overflow: hidden;
+  }
+  .formula-card::before {
+    content: '∂';
+    position: absolute;
+    right: 1rem;
+    top: -0.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 8rem;
+    color: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+  .formula-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+  .formula-eq {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-style: italic;
+  }
+  .formula-vars {
+    margin-top: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  .var-item { display: flex; align-items: baseline; gap: 0.5rem; }
+  .var-sym { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; color: var(--gold); }
+  .var-desc { font-size: 0.68rem; color: rgba(240,235,224,0.6); letter-spacing: 0.05em; }
+
+  /* Comparison table */
+  .compare-section {
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .compare-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+  .compare-section h2 em { color: var(--gold); font-style: italic; }
+  .sub-desc { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2.5rem; }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 2rem;
+  }
+  .compare-table th {
+    background: var(--blue-dark);
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border: 1px solid rgba(200,191,168,0.3);
+    letter-spacing: 0.08em;
+  }
+  .compare-table td {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--line);
+    color: #2a2520;
+    line-height: 1.6;
+  }
+  .compare-table tr:nth-child(even) td { background: var(--cream); }
+  .compare-table tr:hover td { background: rgba(184,134,11,0.05); }
+  .compare-table td.highlight { color: var(--gold); font-style: italic; }
+
+  /* Classification section */
+  .class-section {
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .class-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+  .class-section h2 em { color: var(--gold); font-style: italic; }
+
+  .class-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .class-card {
+    border: 1px solid var(--line);
+    padding: 2rem;
+    position: relative;
+    transition: border-color 0.3s, transform 0.3s;
+    overflow: hidden;
+  }
+  .class-card::before {
+    content: attr(data-num);
+    position: absolute;
+    right: -0.5rem;
+    bottom: -1rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 6rem;
+    font-weight: 300;
+    color: rgba(184,134,11,0.07);
+    pointer-events: none;
+    line-height: 1;
+  }
+  .class-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+  .class-card-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.8rem;
+  }
+  .class-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+  .class-card .eq {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-style: italic;
+    color: var(--muted);
+    padding: 0.8rem 1.2rem;
+    background: var(--cream);
+    border-left: 2px solid var(--gold);
+    margin: 1rem 0;
+  }
+  .class-card .eq-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+  }
+  .class-card .apps-list {
+    list-style: none;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .class-card .apps-list li {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .class-card .apps-list li::before { content: '▸'; color: var(--gold); font-size: 0.7rem; }
+
+  /* Image section */
+  .img-section {
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .img-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+  .img-section h2 em { color: var(--gold); font-style: italic; }
+  .img-block {
+    width: 100%;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .img-block img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .img-caption {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .img-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  /* Heat Equation section */
+  .heat-section {
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .heat-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+  .heat-section h2 em { color: var(--gold); font-style: italic; }
+  .heat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 2rem;
+    align-items: start;
+  }
+  .heat-info p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    line-height: 1.85;
+    color: #2a2520;
+    margin-bottom: 1.5rem;
+  }
+  .interp-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .interp-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    color: var(--ink);
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .interp-list li::before { content: '▸'; color: var(--gold); font-size: 0.7rem; margin-top: 0.25rem; flex-shrink: 0; }
+
+  /* Engineering applications */
+  .eng-section {
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .eng-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+  .eng-section h2 em { color: var(--gold); font-style: italic; }
+  .eng-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-top: 2rem;
+  }
+  .eng-cell {
+    background: var(--cream);
+    padding: 1.8rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: background 0.3s;
+  }
+  .eng-cell:hover { background: var(--paper); }
+  .eng-icon { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--gold); line-height: 1; }
+  .eng-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); line-height: 1.3; }
+  .eng-desc { font-size: 0.65rem; color: var(--muted); line-height: 1.5; }
+
+  /* Boundary conditions */
+  .boundary-section {
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .boundary-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+  .boundary-section h2 em { color: var(--gold); font-style: italic; }
+  .boundary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .bc-card {
+    border: 1px solid var(--line);
+    padding: 2rem;
+    transition: border-color 0.3s;
+  }
+  .bc-card:hover { border-color: var(--gold); }
+  .bc-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+  .bc-card p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 0.8rem;
+  }
+  .bc-eq {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-style: italic;
+    color: var(--gold);
+    padding: 0.6rem 1rem;
+    background: var(--cream);
+    border-left: 2px solid var(--gold);
+    display: inline-block;
+  }
+
+  /* Separation of variables */
+  .sep-section {
+    margin-bottom: 5rem;
+    padding-bottom: 5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .sep-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+  .sep-section h2 em { color: var(--gold); font-style: italic; }
+  .sep-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 2rem;
+    align-items: start;
+  }
+  .sep-steps {
+    counter-reset: step;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .sep-steps li {
+    counter-increment: step;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--ink);
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .sep-steps li::before {
+    content: counter(step, decimal-leading-zero);
+    font-size: 0.65rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+    width: 2rem;
+  }
+  .sep-solved {
+    background: var(--blue-dark);
+    color: #f0ebe0;
+    padding: 2rem 2.5rem;
+    border-left: 4px solid var(--gold);
+  }
+  .sep-solved .solve-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.2rem;
+  }
+  .sep-solved .step-row {
+    margin-bottom: 1.2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid rgba(200,191,168,0.15);
+  }
+  .sep-solved .step-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .sep-solved .step-title {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(240,235,224,0.4);
+    margin-bottom: 0.5rem;
+  }
+  .sep-solved .step-eq {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  /* Quote block */
+  .quote-block {
+    padding: 4rem 3rem;
+    text-align: center;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin: 5rem 0;
+  }
+  .quote-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink);
+    line-height: 1.5;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .quote-text strong { font-weight: 600; color: var(--gold); font-style: normal; }
+
+  /* Classification summary */
+  .summary-section {
+    margin-bottom: 5rem;
+  }
+  .summary-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+    color: var(--ink);
+  }
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .summary-table th {
+    background: var(--blue-dark);
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border: 1px solid rgba(200,191,168,0.3);
+  }
+  .summary-table td {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--line);
+    color: #2a2520;
+  }
+  .summary-table tr:nth-child(even) td { background: var(--cream); }
+  .summary-table td.gold { color: var(--gold); font-style: italic; }
+
+  /* Page nav */
+  .page-nav {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--line);
+  }
+  .nav-arrow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--ink);
+    transition: gap 0.3s;
+  }
+  .nav-arrow:hover { gap: 1.5rem; }
+  .nav-arrow-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .nav-arrow-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--ink); }
+  .nav-arrow-icon {
+    width: 48px; height: 48px;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: var(--gold);
+    transition: background 0.3s, color 0.3s;
+  }
+  .nav-arrow:hover .nav-arrow-icon { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  footer p { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+  .footer-eq { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--gold); font-style: italic; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(25px);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .intro-block, .heat-grid, .sep-grid, .compare-table, .class-cards, .boundary-cards { grid-template-columns: 1fr; gap: 2rem; }
+    .class-cards { grid-template-columns: 1fr; }
+    .eng-grid { grid-template-columns: repeat(2, 1fr); }
+    .nav-links { display: none; }
+    .content-wrap { padding: 3rem 1.5rem; }
+    .img-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">D.E Assignment</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="de-index.html">Index</a></li>
+    <li><a href="de-intro.html">Introduction</a></li>
+    <li><a href="de-first-order.html">First Order</a></li>
+    <li><a href="num.html" class="active">Numerical Methods</a></li>
+    <li><a href="patterns.html">Patterns</a></li>
+    <li><a href="second-order-de.html">2nd Order D.E.</a></li>
+     <li><a href="steady-state.html">Steady State</a></li>
+    <li><a href="solution-second-order.html">Solutions</a></li>
+    <li><a href="Functions-of-several-variables.html">Functions</a></li>
+    <li><a href="srob.html">Robotics</a></li>
+   </ul>
+</nav>
+
+
+<header class="hero-banner">
+  <p class="hero-eyebrow">Chapter 05 · Multi-Variable Systems</p>
+  <h1 class="hero-title">Partial <em>Differential</em> Equations</h1>
+  <div class="hero-formula">F(x, y, z, ∂z/∂x, ∂z/∂y, ...) = 0</div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- Intro block -->
+  <div class="intro-block reveal">
+    <div class="intro-aside">
+      <p class="section-tag">What is a PDE?</p>
+      <h2 class="aside-heading">Multi-variable <em>change</em></h2>
+      <div class="aside-line"></div>
+      <p class="aside-note">Unlike ODEs, PDEs involve functions of two or more independent variables — essential for describing heat, waves, and fields in physical space.</p>
+    </div>
+    <div class="intro-body">
+      <p class="lead-p">A Partial Differential Equation (PDE) is an equation involving partial derivatives of a function with respect to two or more independent variables.</p>
+      <p>Unlike ordinary differential equations (ODEs), PDEs deal with functions of multiple variables, making them far more powerful — and complex — tools for modeling physical phenomena.</p>
+
+      <div class="formula-card">
+        <div class="formula-label">General Form</div>
+        <div class="formula-eq">F(x, y, z, ∂z/∂x, ∂z/∂y, ∂²z/∂x², ∂²z/∂y², ...) = 0</div>
+        <div class="formula-vars">
+          <div class="var-item"><span class="var-sym">x, y</span><span class="var-desc">= independent variables</span></div>
+          <div class="var-item"><span class="var-sym">z</span><span class="var-desc">= dependent variable</span></div>
+          <div class="var-item"><span class="var-sym">∂z/∂x</span><span class="var-desc">= partial derivative</span></div>
+        </div>
+      </div>
+
+      <p>PDEs are widely used to model physical phenomena such as heat transfer, wave propagation, fluid flow, electromagnetics, and engineering systems. They describe how quantities change across space and time simultaneously.</p>
+    </div>
+  </div>
+
+  <!-- ODE vs PDE Comparison -->
+  <div class="compare-section reveal">
+    <div class="section-tag">Distinction</div>
+    <h2>ODE <em>vs.</em> PDE</h2>
+    <p class="sub-desc">Key differences between ordinary and partial differential equations</p>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th>ODE (Ordinary D.E.)</th>
+          <th>PDE (Partial D.E.)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Derivative Type</td>
+          <td>Contains ordinary derivatives</td>
+          <td class="highlight">Contains partial derivatives</td>
+        </tr>
+        <tr>
+          <td>Variables</td>
+          <td>One independent variable</td>
+          <td class="highlight">Two or more independent variables</td>
+        </tr>
+        <tr>
+          <td>Complexity</td>
+          <td>Simpler to solve</td>
+          <td class="highlight">More complex</td>
+        </tr>
+        <tr>
+          <td>Example</td>
+          <td>dy/dx = x + y</td>
+          <td class="highlight">∂u/∂t = α ∂²u/∂x²</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Applications -->
+  <div class="eng-section reveal">
+    <div class="section-tag">Where They're Used</div>
+    <h2>Applications of <em>PDEs</em></h2>
+    <p class="sub-desc">Spanning every domain of physical science and engineering</p>
+    <div class="eng-grid">
+      <div class="eng-cell">
+        <div class="eng-icon">🌡</div>
+        <div class="eng-name">Heat Transfer</div>
+        <div class="eng-desc">Temperature distribution over time and space</div>
+      </div>
+      <div class="eng-cell">
+        <div class="eng-icon">💧</div>
+        <div class="eng-name">Fluid Mechanics</div>
+        <div class="eng-desc">Flow velocity and pressure fields</div>
+      </div>
+      <div class="eng-cell">
+        <div class="eng-icon">⚡</div>
+        <div class="eng-name">Electromagnetic Fields</div>
+        <div class="eng-desc">Maxwell's equations and signal propagation</div>
+      </div>
+      <div class="eng-cell">
+        <div class="eng-icon">〰</div>
+        <div class="eng-name">Vibrations &amp; Waves</div>
+        <div class="eng-desc">Sound, seismic, and structural waves</div>
+      </div>
+      <div class="eng-cell">
+        <div class="eng-icon">🤖</div>
+        <div class="eng-name">Robotics</div>
+        <div class="eng-desc">Motion planning and dynamic simulations</div>
+      </div>
+      <div class="eng-cell">
+        <div class="eng-icon">✈</div>
+        <div class="eng-name">Aerodynamics</div>
+        <div class="eng-desc">Airflow around surfaces and lift generation</div>
+      </div>
+      <div class="eng-cell">
+        <div class="eng-icon">🖼</div>
+        <div class="eng-name">Image Processing</div>
+        <div class="eng-desc">Edge detection and image diffusion</div>
+      </div>
+      <div class="eng-cell">
+        <div class="eng-icon">🌤</div>
+        <div class="eng-name">Weather Prediction</div>
+        <div class="eng-desc">Atmospheric and climate modeling</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wave/Fluid imagery placeholder -->
+  <div class="img-section reveal">
+    <h2>Physical <em>Phenomena</em> Modelled by PDEs</h2>
+    <div class="img-grid">
+      <div class="img-block">
+        <img src="PLACE_WAVE_PROPAGATION_IMAGE_HERE" alt="Wave propagation diagram">
+        <div class="img-caption">Wave propagation — governed by the Hyperbolic PDE: ∂²u/∂t² = c² ∂²u/∂x²</div>
+      </div>
+      <div class="img-block">
+        <img src="PLACE_FLUID_TURBULENCE_IMAGE_HERE" alt="Fluid turbulence visualization">
+        <div class="img-caption">Turbulent fluid flow — modeled using Navier-Stokes equations, a system of PDEs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Classification -->
+  <div class="class-section reveal">
+    <div class="section-tag">Classification</div>
+    <h2>Three Types of <em>PDEs</em></h2>
+    <p class="sub-desc">Classified by the discriminant B² − 4AC of the second-order terms</p>
+
+    <div class="class-cards">
+      <div class="class-card" data-num="01">
+        <div class="class-card-label">Type 01 · Elliptic</div>
+        <h3>Laplace Equation</h3>
+        <div class="eq-label">Governing equation</div>
+        <div class="eq">∂²u/∂x² + ∂²u/∂y² = 0</div>
+        <ul class="apps-list">
+          <li>Electrostatics</li>
+          <li>Steady-State Heat Flow</li>
+          <li>Potential Theory</li>
+        </ul>
+      </div>
+      <div class="class-card" data-num="02">
+        <div class="class-card-label">Type 02 · Parabolic</div>
+        <h3>Heat Equation</h3>
+        <div class="eq-label">Governing equation</div>
+        <div class="eq">∂u/∂t = α ∂²u/∂x²</div>
+        <ul class="apps-list">
+          <li>Heat Transfer</li>
+          <li>Diffusion Processes</li>
+          <li>Chemical Reactions</li>
+        </ul>
+      </div>
+      <div class="class-card" data-num="03">
+        <div class="class-card-label">Type 03 · Hyperbolic</div>
+        <h3>Wave Equation</h3>
+        <div class="eq-label">Governing equation</div>
+        <div class="eq">∂²u/∂t² = c² ∂²u/∂x²</div>
+        <ul class="apps-list">
+          <li>Sound Waves</li>
+          <li>Vibrations</li>
+          <li>Electromagnetic Waves</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Table -->
+  <div class="summary-section reveal">
+    <div class="section-tag">Quick Reference</div>
+    <h2>Classification <em>Summary</em></h2>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Equation</th>
+          <th>Application</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="gold">Elliptic</td>
+          <td>Laplace Equation</td>
+          <td>Potential Fields</td>
+        </tr>
+        <tr>
+          <td class="gold">Parabolic</td>
+          <td>Heat Equation</td>
+          <td>Heat Transfer</td>
+        </tr>
+        <tr>
+          <td class="gold">Hyperbolic</td>
+          <td>Wave Equation</td>
+          <td>Vibrations &amp; Waves</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Heat Equation detail -->
+  <div class="heat-section reveal">
+    <div class="section-tag">Deep Dive · Parabolic PDE</div>
+    <h2>The <em>Heat</em> Equation</h2>
+    <p class="sub-desc">Describing how temperature evolves over time and space</p>
+
+    <div class="heat-grid">
+      <div class="heat-info">
+        <div class="formula-card">
+          <div class="formula-label">Heat Equation</div>
+          <div class="formula-eq">∂u/∂t = α ∂²u/∂x²</div>
+          <div class="formula-vars">
+            <div class="var-item"><span class="var-sym">u</span><span class="var-desc">= Temperature</span></div>
+            <div class="var-item"><span class="var-sym">t</span><span class="var-desc">= Time</span></div>
+            <div class="var-item"><span class="var-sym">x</span><span class="var-desc">= Position</span></div>
+            <div class="var-item"><span class="var-sym">α</span><span class="var-desc">= Thermal Diffusivity</span></div>
+          </div>
+        </div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.7;color:#2a2520;margin-top:1rem;">Heat flows from regions of higher temperature to regions of lower temperature. Over time, the temperature distribution becomes more uniform as energy spreads through the medium.</p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.7;color:#2a2520;">This principle applies to heat exchangers, engine cooling systems, electronic device cooling, and thermal insulation design.</p>
+        <ul class="interp-list" style="margin-top:1.5rem;">
+          <li>Initial temperature difference is high</li>
+          <li>Heat spreads gradually through the medium</li>
+          <li>Temperature becomes uniform over time</li>
+        </ul>
+      </div>
+      <div>
+        <div class="img-block">
+          <img src="PLACE_HEAT_EQUATION_GRAPH_IMAGE_HERE" alt="Heat equation graph showing temperature distribution">
+          <div class="img-caption">Graph of heat distribution — temperature evolving over time (t = 0.32)</div>
+        </div>
+        <div class="img-block" style="margin-top:1.5rem;">
+          <img src="PLACE_TEMPERATURE_DISTRIBUTION_GRAPH_IMAGE_HERE" alt="1D temperature distribution graph">
+          <div class="img-caption">Temperature distribution along a 1D rod — from cold end to hot end</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wave Equation detail -->
+  <div class="heat-section reveal">
+    <div class="section-tag">Deep Dive · Hyperbolic PDE</div>
+    <h2>The <em>Wave</em> Equation</h2>
+    <p class="sub-desc">Modelling vibrations and propagating disturbances through media</p>
+
+    <div class="heat-grid">
+      <div class="heat-info">
+        <div class="formula-card">
+          <div class="formula-label">Wave Equation</div>
+          <div class="formula-eq">∂²u/∂t² = c² ∂²u/∂x²</div>
+          <div class="formula-vars">
+            <div class="var-item"><span class="var-sym">u</span><span class="var-desc">= Displacement</span></div>
+            <div class="var-item"><span class="var-sym">c</span><span class="var-desc">= Wave Speed</span></div>
+          </div>
+        </div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.7;color:#2a2520;margin-top:1rem;">The wave equation governs the propagation of disturbances through elastic media. Energy is transferred from particle to particle while each particle oscillates about its equilibrium position.</p>
+        <ul class="interp-list" style="margin-top:1rem;">
+          <li>String Vibrations &amp; Musical Instruments</li>
+          <li>Sound Waves in Air and Solids</li>
+          <li>Earthquake (Seismic) Analysis</li>
+          <li>Wireless Communication Signals</li>
+          <li>Structural Vibration Analysis</li>
+        </ul>
+      </div>
+      <div>
+        <div class="img-block">
+          <img src="PLACE_WAVE_TYPES_DIAGRAM_IMAGE_HERE" alt="Types of waves: longitudinal, transverse, surface">
+          <div class="img-caption">Wave types: (a) Longitudinal (b) Transverse (c) Surface — all governed by the wave equation</div>
+        </div>
+        <div class="img-block" style="margin-top:1.5rem;">
+          <img src="PLACE_WAVE_MOTION_GRAPH_IMAGE_HERE" alt="Wave motion propagation graph">
+          <div class="img-caption">Wave propagation graph — displacement amplitude A traveling with velocity v</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Laplace Equation -->
+  <div class="heat-section reveal">
+    <div class="section-tag">Deep Dive · Elliptic PDE</div>
+    <h2>The <em>Laplace</em> Equation</h2>
+    <p class="sub-desc">Describing steady-state potential fields with no local extrema</p>
+
+    <div class="heat-grid">
+      <div class="heat-info">
+        <div class="formula-card">
+          <div class="formula-label">Laplace Equation</div>
+          <div class="formula-eq">∂²u/∂x² + ∂²u/∂y² = 0</div>
+        </div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.7;color:#2a2520;margin-top:1rem;">The Laplace equation describes potential fields in a region with no sources or sinks. Its solutions are harmonic functions — smooth surfaces without any peaks or valleys inside the domain.</p>
+        <ul class="interp-list" style="margin-top:1rem;">
+          <li>Electrostatic Fields</li>
+          <li>Irrotational Fluid Flow</li>
+          <li>Steady-State Heat Transfer</li>
+          <li>Gravitational Potential Fields</li>
+        </ul>
+      </div>
+      <div>
+        <div class="img-block">
+          <img src="PLACE_LAPLACE_3D_SURFACE_IMAGE_HERE" alt="3D surface plot of Laplace equation solution">
+          <div class="img-caption">3D surface plot of the 2D Laplace equation solution — smooth, no peaks or valleys</div>
+        </div>
+        <div class="img-block" style="margin-top:1.5rem;">
+          <img src="PLACE_LAPLACE_CONTOUR_PLOT_IMAGE_HERE" alt="Contour and streamline plot of Laplace equation">
+          <div class="img-caption">Contour &amp; streamline plot — potential field lines fanning from boundary</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Boundary conditions -->
+  <div class="boundary-section reveal">
+    <div class="section-tag">Solution Requirements</div>
+    <h2><em>Boundary</em> Conditions</h2>
+    <p class="sub-desc">A PDE requires boundary conditions for a unique, physically meaningful solution</p>
+
+    <div class="boundary-cards">
+      <div class="bc-card">
+        <h3>Dirichlet Condition</h3>
+        <p>The value of the function is specified at the boundary. Represents prescribed temperature, displacement, or potential.</p>
+        <div class="bc-eq">u(0, t) = 0</div>
+      </div>
+      <div class="bc-card">
+        <h3>Neumann Condition</h3>
+        <p>The derivative of the function (flux) is specified at the boundary. Represents insulated surfaces or zero-flux conditions.</p>
+        <div class="bc-eq">∂u/∂x = 0</div>
+      </div>
+      <div class="bc-card">
+        <h3>Mixed Condition</h3>
+        <p>A combination of both Dirichlet and Neumann conditions, applied to different parts of the boundary for complex systems.</p>
+        <div class="bc-eq">αu + β ∂u/∂n = g</div>
+      </div>
+    </div>
+
+    <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--muted);line-height:1.7;margin-top:2rem;padding:1.5rem;border-left:3px solid var(--gold);background:var(--cream);">Boundary conditions represent real-world physical constraints — the temperature at the edge of a rod, the insulated end of a pipe, or the pressure at the wall of a vessel.</p>
+  </div>
+
+  <!-- Separation of Variables -->
+  <div class="sep-section reveal">
+    <div class="section-tag">Solution Method</div>
+    <h2>Separation of <em>Variables</em></h2>
+    <p class="sub-desc">One of the most powerful techniques for solving PDEs analytically</p>
+
+    <div class="sep-grid">
+      <div>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;line-height:1.8;color:#2a2520;margin-bottom:2rem;">The method of separation of variables assumes the solution can be written as a product of functions, each depending on only one variable. This transforms the PDE into simpler ODEs.</p>
+
+        <ol class="sep-steps">
+          <li>Assume solution of the form u(x,t) = X(x) · T(t)</li>
+          <li>Substitute into the PDE</li>
+          <li>Separate variables — each side equals a constant</li>
+          <li>Obtain and solve the resulting ODEs individually</li>
+          <li>Combine solutions to satisfy boundary conditions</li>
+        </ol>
+
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;line-height:1.7;color:var(--muted);margin-top:1.5rem;font-style:italic;">Advantages: Simplifies PDE into ODEs; widely used for Heat and Wave equations; mathematically tractable.</p>
+      </div>
+
+      <div class="sep-solved">
+        <div class="solve-label">Solved Example — Heat Equation</div>
+
+        <div class="step-row">
+          <div class="step-title">Given</div>
+          <div class="step-eq">∂u/∂t = ∂²u/∂x²</div>
+        </div>
+        <div class="step-row">
+          <div class="step-title">Assume</div>
+          <div class="step-eq">u(x,t) = X(x) · T(t)</div>
+        </div>
+        <div class="step-row">
+          <div class="step-title">After Substitution</div>
+          <div class="step-eq">1/T · dT/dt = 1/X · d²X/dx² = −k</div>
+        </div>
+        <div class="step-row">
+          <div class="step-title">Resulting ODEs</div>
+          <div class="step-eq">dT/dt + kT = 0</div>
+          <div class="step-eq" style="margin-top:0.5rem;">d²X/dx² + kX = 0</div>
+        </div>
+        <div class="step-row">
+          <div class="step-title">Solution approach</div>
+          <div class="step-eq" style="font-size:1rem;opacity:0.8;">Solve individually, then combine with boundary conditions to form the complete solution via Fourier series.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Heat distribution surface imagery -->
+  <div class="img-section reveal">
+    <h2>Engineering <em>Visualizations</em></h2>
+    <div class="img-grid">
+      <div class="img-block">
+        <img src="PLACE_HEAT_DISTRIBUTION_SURFACE_IMAGE_HERE" alt="3D heat distribution surface plot">
+        <div class="img-caption">Heat distribution surface — temperature governed by the 2D Heat Equation</div>
+      </div>
+      <div class="img-block">
+        <img src="PLACE_WAVE_PROPAGATION_GRAPH_IMAGE_HERE" alt="Wave propagation graph">
+        <div class="img-caption">Wave propagation graph — displacement amplitude over position and time</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quote block -->
+  <div class="quote-block reveal">
+    <p class="quote-text">PDEs form the <strong>foundation of engineering mathematics</strong> — describing heat, waves, and fields across mechanical, electrical, civil, aerospace, and robotics domains.</p>
+  </div>
+
+  <!-- Page nav -->
+  <div class="page-nav">
+    <a href="steady-state.html" class="nav-arrow">
+      <div style="text-align:right">
+        <div class="nav-arrow-label">Next Chapter</div>
+        <div class="nav-arrow-title">Steady State &amp; Frequency Response</div>
+      </div>
+      <div class="nav-arrow-icon">→</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <p>K.L.E Technological University · 25EMAB102</p>
+  <span class="footer-eq">∂u/∂t = α ∂²u/∂x²</span>
+  <p>Guide: Dr. Narayan Swamy</p>
+</footer>
+
+<script>
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
